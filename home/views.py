@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from .models import MyImage,Footer,File
+from .models import MyImage,File
 # Create your views here.
 def home(request):
     image_data = MyImage.objects.filter(title="Profile Photo").first()
