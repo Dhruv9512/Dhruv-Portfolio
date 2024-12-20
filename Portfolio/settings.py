@@ -11,7 +11,7 @@ if not SECRET_KEY:
     raise ValueError("SECRET_KEY is not set in the environment.")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = config("DEBUG", default="False").strip().lower() in ("true", "1")
+DEBUG = True
 
 ALLOWED_HOSTS = ['dhruv-portfolio-285z.onrender.com']  # Add your domain name here
 
