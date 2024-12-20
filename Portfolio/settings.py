@@ -62,14 +62,15 @@ WSGI_APPLICATION = "Portfolio.wsgi.application"
 
 # Database configuration using environment variables
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",  # Make sure PostgreSQL is installed in your environment
-        "NAME": config("POSTGRES_DATABASE"),  # Set POSTGRES_DATABASE environment variable in Render
-        "USER": config("POSTGRES_USER"),  # Set POSTGRES_USER environment variable in Render
-        "PASSWORD": config("POSTGRES_PASSWORD"),  # Set POSTGRES_PASSWORD environment variable in Render
-        "HOST": config("POSTGRES_HOST"),  # Set POSTGRES_HOST environment variable in Render
-        "PORT": config("POSTGRES_PORT", default="5432"),  # Default port for PostgreSQL is 5432
+   'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.environ.get('DB_NAME'),
+        'USER': os.environ.get('DB_USER'),
+        'PASSWORD': os.environ.get('DB_PASSWORD'),
+        'HOST': os.environ.get('DB_HOST'),
+        'PORT': os.environ.get('DB_PORT'),
     }
+
 }
 
 # Media files
