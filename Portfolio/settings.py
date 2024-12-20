@@ -11,9 +11,9 @@ if not SECRET_KEY:
     raise ValueError("SECRET_KEY is not set in the environment.")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = ['dhruv-portfolio-285z.onrender.com']  # Add your domain name here
+ALLOWED_HOSTS = ['dhruv-portfolio-285z.onrender.com','127.0.0.1', '192.168.1.1']
 
 # Application definition
 INSTALLED_APPS = [
