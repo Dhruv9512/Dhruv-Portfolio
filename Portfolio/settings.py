@@ -6,18 +6,14 @@ from decouple import config
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = config('SECRET_KEY')  # Fetch SECRET_KEY from environment variables
+SECRET_KEY = config('SECRET_KEY')  # Using decouple to fetch the SECRET_KEY from environment variables
 if not SECRET_KEY:
     raise ValueError("SECRET_KEY is not set in the environment.")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = config('DEBUG', default=False, cast=bool)
 
-# Add your domain and localhost to ALLOWED_HOSTS
 ALLOWED_HOSTS = ['dhruv-portfolio-285z.onrender.com', '127.0.0.1', 'localhost']
-
-# Add CSRF trusted origins for secure submissions
-CSRF_TRUSTED_ORIGINS = ['https://dhruv-portfolio-285z.onrender.com']
 
 # Application definition
 INSTALLED_APPS = [
@@ -108,9 +104,6 @@ SECURE_CONTENT_TYPE_NOSNIFF = True
 SESSION_COOKIE_SECURE = not DEBUG  # Secure cookies in production (only over HTTPS)
 CSRF_COOKIE_SECURE = not DEBUG  # CSRF cookies should be secure in production
 X_FRAME_OPTIONS = "DENY"
-
-# Uncomment if your deployment requires HTTPS redirects
-# SECURE_SSL_REDIRECT = True  
 
 # Internationalization
 LANGUAGE_CODE = "en-us"
