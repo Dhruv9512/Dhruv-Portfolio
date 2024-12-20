@@ -78,9 +78,14 @@ MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
 # Static files (CSS, JavaScript, images)
-STATIC_URL = "/static/"
-STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")  # Location to collect static files
-STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"  # Efficient static file storage in production
+STATIC_URL = "/static/" 
+STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")  
+
+# Use WhiteNoise for static file storage in production
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+
+# If you have additional directories for static files in development
+STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")] 
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
