@@ -1,0 +1,134 @@
+{% extends "index/index.html" %}
+{% load static %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static "about/css/about.css" %}">
+{% endblock %}
+
+
+{% block content %}
+<div class="container-fluid mt-5 mb-5 row gy-5 d-flex justify-content-between">
+    <div class=" container col-lg-3 col-md-4 col-12  position-sticky" id="nav-left">
+        <ul class="nav nav-pills d-flex flex-column justify-content-around " id="pills-tab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="pills-home-tab" data-bs-toggle="pill" data-bs-target="#pills-Education" type="button" role="tab" aria-controls="pills-home" aria-selected="true">Education</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="pills-profile-tab" data-bs-toggle="pill" data-bs-target="#pills-skill" type="button" role="tab" aria-controls="pills-profile" aria-selected="false">My Skills</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="pills-contact-tab" data-bs-toggle="pill" data-bs-target="#pills-Certifications" type="button" role="tab" aria-controls="pills-contact" aria-selected="false">Certifications & Achievements</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="pills-contact-tab" data-bs-toggle="pill" data-bs-target="#pills-Work" type="button" role="tab" aria-controls="pills-contact" aria-selected="false">Work Experience / Internships</button>
+            </li>
+        </ul>
+    </div>
+
+    <div class="col-lg-9 col-md-8 col-12" id="content-right">
+        <div class="tab-content" id="pills-tabContent">
+            <!-- Education Tab -->
+            <div class="tab-pane fade show active" id="pills-Education" role="tabpanel" aria-labelledby="pills-home-tab" tabindex="0">
+                {% for v in Education %}
+                    <div class="about-card">
+                        <h5> {{ v.Name }} </h5>
+                        <ul>
+                            <li> <p><strong><u>Institution:</u></strong> &nbsp {{ v.institution }}</p></li>
+                            <li><p><strong><u> Address:</u> </strong> &nbsp {{ v.address }}</p></li>
+                            <li><p><strong><u> Status:</u> </strong> &nbsp {{ v.status }}</p></li>
+                            <li><p><strong><u> Score:</u> </strong> &nbsp {{ v.score }}</p></li>
+                        </ul>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <!-- My Skills Tab -->
+            <div class="tab-pane fade" id="pills-skill" role="tabpanel" aria-labelledby="pills-profile-tab" tabindex="0">
+                {% for v in Skill %}
+                    <div class="about-card">
+                        {% for j in v %}
+                            {% if forloop.counter == 1 %}
+                                <h5>{{ j.Name }}</h5>
+                            {% endif %}
+                        {% endfor %}
+                        <ul>
+                            <li>
+                                <p><strong><u> Skills:</u></strong> &nbsp
+                                {% for j in v %}
+                                    {{ j.skill }} ,
+                                {% endfor %}
+                                </p>
+                            </li> <br>
+                            <li><strong><u> Proficiency:</u> </strong>
+                                <ul>
+                                    {% for j in v %}
+                                        <li>
+                                            <p><strong><u> {{ j.skill }}:</u></strong> &nbsp
+                                            {{ j.Proficiency }} </li>
+                                        </p>
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <!-- Certifications & Achievements Tab -->
+            <div class="tab-pane fade" id="pills-Certifications" role="tabpanel" aria-labelledby="pills-contact-tab" tabindex="0">
+                {% comment %} For Certificates {% endcomment %}
+                {% for v in Certifications_and_Achievements.certification_link %}
+                    <div class="about-card">
+                        {% for j in v %}
+                            {% if forloop.counter == 1 %}
+                                <h5>{{ j.name }}</h5>
+                            {% endif %}
+                            <ul>
+                                <li><p><strong><u>{{ j.title }}</u></strong> &nbsp {{ j.content }}</p></li>
+                                <li><p><strong><u>Link:</u></strong> &nbsp <a href="{{ j.link }}">View Certificate</a></p></li>
+                            </ul>
+                        {% endfor %}
+                    </div>
+                {% endfor %}
+
+                {% comment %} For Achievements {% endcomment %}
+                {% for v in Certifications_and_Achievements.Achievements %}
+                    <div class="about-card">
+                        {% for j in v %}
+                            {% if forloop.counter == 1 %}
+                                <h5>{{ j.name }}</h5>
+                            {% endif %}
+                            <ul>
+                                <li><p>{{ j.content }}</p></li>
+                            </ul>
+                        {% endfor %}
+                    </div>
+                {% endfor %}
+            </div>
+
+            <!-- Work Experience / Internships Tab -->
+            <div class="tab-pane fade" id="pills-Work" role="tabpanel" aria-labelledby="pills-disabled-tab" tabindex="0">
+                {% for v in Work_Experience_and_Internships %}
+                    <div class="about-card">
+                        {% for j in v %}
+                            {% if forloop.counter == 1 %}
+                                <h5>{{ j.name }}</h5>
+                            {% endif %}
+                            <ul>
+                                <li><p><strong><u>{{ j.title }}</u></strong> &nbsp {{ j.content }}</p></li>
+                            </ul>
+                        {% endfor %}
+                    </div>
+                {% endfor %}
+            </div>                     
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+
+{% block js %}
+<script src="{% static "about/js/about.js" %}"></script>
+{% endblock  %}

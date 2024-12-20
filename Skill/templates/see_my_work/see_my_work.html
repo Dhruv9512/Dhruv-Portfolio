@@ -1,0 +1,43 @@
+{% extends "index/index.html" %}
+{% load static %}
+
+{% comment %} css {% endcomment %}
+ {% block css %}
+    <link rel="stylesheet" href="{% static "css/see_my_work.css" %}">
+ {% endblock %}
+
+{% block content %}
+
+<div class="container-fluid mt-5 d-flex flex-column seemyworkdiv">
+
+        <!-- Image Section -->
+        <div class="seemywork-img-container d-flex flex-column justify-content-center mt-0">
+            <img src="{{ seemywork.Work_Image.url }}" alt="My work image" class="seemyworkimg">
+            <h4 class="seemyworkh4">{{ seemywork.title }}</h4>
+        </div>
+
+        <!-- Information List Section -->
+        <hr>
+        <ul class="work-info-list mx-5 seemyworklist" style="list-style-type: none; text-align: left;">
+            <li><p><strong><u>Description: </u></strong> &nbsp {{ Data.description }}</p></li>
+            <li><p><strong><u>Github Link: </u></strong><a href="{{ Data.github_link }}" target="_blank"> &nbsp {{ Data.github_link }}</a></p></li>
+            {% if Data.website_link == "https://NULL.com" %}
+
+                <li><p><strong><u>Website Link: </u></strong> &nbsp <b>Web Site Is Not Available</b></p></li>
+
+            {% else %}
+            
+                <li><p><strong><u>Website Link: </u></strong><a href="{{ Data.website_link }}" target="_blank"> &nbsp {{ Data.website_link }}</a></p></li>
+            
+            {% endif %}
+        </ul>
+</div>
+
+
+
+{% endblock %}
+
+ {% comment %} Java script {% endcomment %}
+{% block js %}
+    <script src="{% static "js/see_my_work.js" %}"></script>
+{% endblock %}

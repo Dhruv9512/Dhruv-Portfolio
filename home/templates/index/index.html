@@ -1,0 +1,115 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Dhruv Sharma's Portfolio showcasing web development and design skills.">
+    <meta name="keywords" content="web development, portfolio, Django, Bootstrap">
+    <meta name="author" content="Dhruv Sharma">
+    <title>Portfolio</title>
+    <link rel="stylesheet" href="{% static 'index/css/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'index/css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'index/css/media.css' %}">
+    {% block css %}
+    {% endblock %}
+
+</head>
+<body>
+   
+    {% comment %} ---------------------------------Header---------------------------{% endcomment %}
+    <header class="container-fluid position-sticky top-0 main_header shadow-sm">
+        <nav class="navbar navbar-expand-lg po">
+            {% comment %} Logo... {% endcomment %}
+            <div class="row justify-content-start w-50"> 
+                <div class="col-6 col-lg-3"> 
+                    <img src=" {{ Image.Profile_Logo.image.url }} " class="img-fluid" alt="Logo" id="Dhruv_Logo">
+                </div>
+            </div>
+            {% comment %} Button for toggle {% endcomment %}
+            <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvas">    
+                <i class="fa-solid fa-bars" id="nav_icon"></i>
+            </button>
+            {% comment %} Desktop navbar {% endcomment %}
+            <div class="collapse navbar-collapse justify-content-end" id="collapse">
+                <div class="navbar-nav gap-5">
+                    {% url "home" as home %}
+                    <a href="{{ home }}">Home</a>
+                    {% url "about me" as about %}
+                    <a href="{{ about }}">About me</a>
+                    {% url "Work" as work %}
+                    <a href="{{ work }}">My Work</a>
+                </div>
+            </div>
+            
+        </nav>
+        {% comment %} Mobile navbar {% endcomment %}
+        <div class="offcanvas offcanvas-start position-fixed" tabindex="-1" id="offcanvas">
+            <div class="offcanvas-header">
+                <img src="{% static 'index/img/dhruv.png' %}" class="img-fluid w-50" alt="Logo">
+                <button type="button" class="btn fs-2 ms-auto" data-bs-dismiss="offcanvas" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="offcanvas-body">
+                <div class="mb-5 mobile_navbar d-flex flex-column justify-content-between"> 
+                    <a href="{{ home }}" class="{% if request.path == home %} active {% endif %}">Home</a>
+                    <a href="{{ about }}" class="{% if request.path == about %} active {% endif %}">About me</a>
+                    <a href="{{ work }}" class="{% if request.path == work %} active {% endif %}">My Work</a>
+                </div>
+
+                {% comment %} social media icon {% endcomment %}
+                <div class="social_media d-flex justify-content-around mt-5">
+                    <div class="d-flex justify-content-center align-items-center"><a href="{{ Footer.instagram.content }}"><i class="fa-brands fa-instagram pt-1"></i></a></div>
+                    <div class="d-flex justify-content-center align-items-center"><a href="{{ Footer.linkdin.content }}"><i class="fa-brands fa-linkedin"></i></a></div>
+                    <div class="d-flex justify-content-center align-items-center"><a href="{{ Footer.facebook.content }}"><i class="fa-brands fa-facebook"></i></a></div>
+                    <div class="d-flex justify-content-center align-items-center"><a href="{{ Footer.discode.content }}"><i class="fa-brands fa-discord"></i></a></div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    {% comment %}------------------------Content-----------------------{% endcomment %}
+    <main class="container-fluid h-100 w-100 z-0">
+        {% block content %}
+        {% endblock %}
+    </main>
+    
+
+    {% comment %} --------------------------Footer-------------------------------{% endcomment %}
+    <footer class="container-fluid position-relative bottom-0 main_footer z-5 shadow-lg">
+        <div class="container-fluid">
+            <div class="row gy-5">
+                <div class="col-md-6 col-12">
+                    <div class="info g-5">
+                        <div class="d-flex justify-content-center align-items-center"><i class="fa-solid fa-location-dot"></i></div><p>{{ Footer.Address.content }}</p>
+                        <div class="d-flex justify-content-center align-items-center"><i class="fa-solid fa-phone "></i></div><p>{{ Footer.Mobile_Number.content }}</p>
+                        <div class="d-flex justify-content-center align-items-center"><i class="fa-solid fa-envelope"></i></div><p>{{ Footer.Email.content }}</p>
+                    </div>
+                </div>
+                <div class="col-md-6 col-12">
+                    <div class="about d-flex justify-content-between flex-column">
+                        <h4 class="text-center mb-4 ms-lg-5 text-decoration-underline" id="About_me_footer">About me</h4>
+                        <p class="text-start mb-5 ms-lg-5">{{ Footer.about_me.content }}</p>
+                    </div>
+                    <div class="social_media d-flex justify-content-around mb-5">
+                        <div class="d-flex justify-content-center align-items-center"><a href="{{ Footer.instagram.content }}"><i class="fa-brands fa-instagram pt-1"></i></a></div>
+                        <div class="d-flex justify-content-center align-items-center"><a href="{{ Footer.linkdin.content }}"><i class="fa-brands fa-linkedin"></i></a></div>
+                        <div class="d-flex justify-content-center align-items-center"><a href="{{ Footer.facebook.content }}"><i class="fa-brands fa-facebook"></i></a></div>
+                        <div class="d-flex justify-content-center align-items-center"><a href="{{ Footer.discode.content }}"><i class="fa-brands fa-discord"></i></a></div>
+                    </div>
+                </div>
+            </div>
+            <div class="row d-flex justify-content-md-center mt-md-4 me-md-5 mt-0 ms-lg-3">
+                <div class="container text-center copyright">
+                    <p>Copyright © 2010 by Dhruv Sharma</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="{% static 'index/js/bootstrap.min.js' %}"></script>
+    <script src="{% static 'index/jquery/jquery.js' %}"></script>
+    <script src="{% static 'index/popper/popper.js' %}"></script>
+    {% block js %}{% endblock %}
+</body>
+</html>
