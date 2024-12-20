@@ -19,7 +19,7 @@ if not SECRET_KEY:
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv("DEBUG", "False").strip().lower() in ("true", "1")
 
-ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "").split() or ["localhost"]
+ALLOWED_HOSTS = ["*"]
 
 # Application definition
 INSTALLED_APPS = [
