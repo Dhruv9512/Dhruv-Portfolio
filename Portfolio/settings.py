@@ -73,7 +73,7 @@ DATABASES = {
     }
 }
 
-# Media files
+# Media files (added to serve user-uploaded content like images)
 MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
@@ -85,7 +85,7 @@ STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 # If you have additional directories for static files in development
-STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")] 
+STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]   
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
