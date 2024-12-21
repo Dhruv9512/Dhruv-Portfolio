@@ -7,7 +7,7 @@ class WorkModel(models.Model):
     id = models.AutoField(primary_key=True)
     title = models.CharField(max_length=100)
     content = models.CharField(max_length=200)
-    Work_Image = models.ImageField(upload_to="Work_Image")
+    Work_Image = models.URLField()
 
 # see my work
 class see_my_work(models.Model):

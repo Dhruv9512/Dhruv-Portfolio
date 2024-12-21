@@ -24,7 +24,7 @@
             {% comment %} Logo... {% endcomment %}
             <div class="row justify-content-start w-50"> 
                 <div class="col-6 col-lg-3"> 
-                    <img src=" {{ Image.Profile_Logo.image.url }} " class="img-fluid" alt="Logo" id="Dhruv_Logo">
+                    <img src="{{ Image.Profile_Logo.image }}" class="img-fluid" alt="Logo" id="Dhruv_Logo">
                 </div>
             </div>
             {% comment %} Button for toggle {% endcomment %}
@@ -47,7 +47,7 @@
         {% comment %} Mobile navbar {% endcomment %}
         <div class="offcanvas offcanvas-start position-fixed" tabindex="-1" id="offcanvas">
             <div class="offcanvas-header">
-                <img src="{% static 'index/img/dhruv.png' %}" class="img-fluid w-50" alt="Logo">
+                <img src="{{ Image.Profile_Logo.image }}" class="img-fluid w-50" alt="Logo">
                 <button type="button" class="btn fs-2 ms-auto" data-bs-dismiss="offcanvas" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <div class="offcanvas-body">
