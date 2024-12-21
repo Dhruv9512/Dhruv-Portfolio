@@ -2,7 +2,8 @@
 """Django's command-line utility for administrative tasks."""
 import os
 import sys
-
+from waitress import serve
+from Portfolio.wsgi import application
 
 def main():
     """Run administrative tasks."""
@@ -19,4 +20,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    serve(application, host='127.0.0.1', port=8000)
