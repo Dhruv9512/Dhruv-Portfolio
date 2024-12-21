@@ -11,7 +11,7 @@ if not SECRET_KEY:
     raise ValueError("SECRET_KEY is not set in the environment.")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['dhruv-portfolio-285z.onrender.com', '127.0.0.1', 'localhost']
 
@@ -38,9 +38,6 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",  
 ]
-
-# Use WhiteNoise for static file storage in production
-STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 ROOT_URLCONF = "Portfolio.urls"
 
@@ -82,12 +79,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
 # Static files (CSS, JavaScript, images)
 STATIC_URL = "/static/" 
-STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")  
-
-
-
-# If you have additional directories for static files in development
-STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]   
+STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")   
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
