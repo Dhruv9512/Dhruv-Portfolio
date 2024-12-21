@@ -75,7 +75,7 @@ DATABASES = {
         "PORT": config("POSTGRES_PORT", default="5432"),
     }
 }
-
+BLOB_READ_WRITE_TOKEN = os.getenv('BLOB_READ_WRITE_TOKEN')
 # Media files (added to serve user-uploaded content like images)
 MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
