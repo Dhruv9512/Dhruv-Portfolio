@@ -39,6 +39,9 @@ MIDDLEWARE = [
     "whitenoise.middleware.WhiteNoiseMiddleware",  
 ]
 
+# Use WhiteNoise for static file storage in production
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+
 ROOT_URLCONF = "Portfolio.urls"
 
 TEMPLATES_DIR = os.path.join(BASE_DIR, "templates")
@@ -81,8 +84,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 STATIC_URL = "/static/" 
 STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")  
 
-# Use WhiteNoise for static file storage in production
-STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+
 
 # If you have additional directories for static files in development
 STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]   
