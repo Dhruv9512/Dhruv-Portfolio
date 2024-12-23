@@ -56,13 +56,13 @@
                     <a href="{{ about }}" class="{% if request.path == about %} active {% endif %}">About me</a>
                     <a href="{{ work }}" class="{% if request.path == work %} active {% endif %}">My Work</a>
                 </div>
-
+             
                 {% comment %} social media icon {% endcomment %}
                 <div class="social_media d-flex justify-content-around mt-5">
-                    <div class="d-flex justify-content-center align-items-center"><a href="{{ Footer.instagram.content }}"><i class="fa-brands fa-instagram pt-1"></i></a></div>
-                    <div class="d-flex justify-content-center align-items-center"><a href="{{ Footer.linkdin.content }}"><i class="fa-brands fa-linkedin"></i></a></div>
-                    <div class="d-flex justify-content-center align-items-center"><a href="{{ Footer.facebook.content }}"><i class="fa-brands fa-facebook"></i></a></div>
-                    <div class="d-flex justify-content-center align-items-center"><a href="{{ Footer.discode.content }}"><i class="fa-brands fa-discord"></i></a></div>
+                    <div class="d-flex justify-content-center align-items-center"><a href="{{ Footer.Hackerrank.content }}"><i class="fa-brands fa-hackerrank"></i></a></div>
+                    <div class="d-flex justify-content-center align-items-center"><a href="{{ Footer.Linkedin.content }}"><i class="fa-brands fa-linkedin"></i></a></div>
+                    <div class="d-flex justify-content-center align-items-center"><a href="{{ Footer.Github.content }}"><i class="fa-brands fa-github"></i></a></div>
+                    <div class="d-flex justify-content-center align-items-center"><a href="{{ Footer.Leetcode.content }}"><i class="custom-icon"></i></a></div>
                 </div>
             </div>
         </div>
@@ -92,16 +92,16 @@
                         <p class="text-start mb-5 ms-lg-5">{{ Footer.about_me.content }}</p>
                     </div>
                     <div class="social_media d-flex justify-content-around mb-5">
-                        <div class="d-flex justify-content-center align-items-center"><a href="{{ Footer.instagram.content }}"><i class="fa-brands fa-instagram pt-1"></i></a></div>
-                        <div class="d-flex justify-content-center align-items-center"><a href="{{ Footer.linkdin.content }}"><i class="fa-brands fa-linkedin"></i></a></div>
-                        <div class="d-flex justify-content-center align-items-center"><a href="{{ Footer.facebook.content }}"><i class="fa-brands fa-facebook"></i></a></div>
-                        <div class="d-flex justify-content-center align-items-center"><a href="{{ Footer.discode.content }}"><i class="fa-brands fa-discord"></i></a></div>
+                        <div class="d-flex justify-content-center align-items-center"><a href="{{ Footer.Hackerrank.content }}"><i class="fa-brands fa-hackerrank"></i></a></div>
+                        <div class="d-flex justify-content-center align-items-center"><a href="{{ Footer.Linkedin.content }}"><i class="fa-brands fa-linkedin"></i></a></div>
+                        <div class="d-flex justify-content-center align-items-center"><a href="{{ Footer.Github.content }}"><i class="fa-brands fa-github"></i></a></div>
+                        <div class="d-flex justify-content-center align-items-center"><a href="{{ Footer.Leetcode.content }}"><i class="custom-icon"></i></a></div>
                     </div>
                 </div>
             </div>
             <div class="row d-flex justify-content-md-center mt-md-4 me-md-5 mt-0 ms-lg-3">
                 <div class="container text-center copyright">
-                    <p>Copyright © 2010 by Dhruv Sharma</p>
+                    <p>Copyright © {{ Current_year }} by Dhruv Sharma</p>
                 </div>
             </div>
         </div>
