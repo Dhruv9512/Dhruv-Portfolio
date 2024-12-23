@@ -16,7 +16,7 @@ main {
 
 header {
   z-index: 10;
-  background-color: #e0e0e0 !important;
+  background-color: #e0e0e0 !important;  
 }
 
 footer {
@@ -31,30 +31,29 @@ footer {
   font-size: 16px;
   transition: transform 0.3s ease;
   display: inline-block;
-  width: 1em;
-  height: 1em;
+  width: 0.9em;
+  height: 0.9em;
   background-size: contain;
 }
-.custom-icon:hover {
-  transform: scale(1.1);
+.custom-icon:hover{
+  transform: scale(1.2);
 }
 
 /* General link styles */
 .navbar-nav a {
   color: #000000;
-  text-decoration: none;
-  font-family: inherit;
+  text-decoration: none; 
+  font-family: inherit; 
   font-size: 20px;
   padding: 8px 16px;
-  transition: color 0.3s ease, background-color 0.3s ease, transform 0.3s ease,
-    box-shadow 0.3s ease;
+  transition: color 0.3s ease, background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 /* Navbar link hover effect */
 .navbar-nav a:hover {
   color: white;
   background-color: #f97316;
-  transform: scale(1.05);
+  transform: scale(1.05); 
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
@@ -63,13 +62,12 @@ footer {
   width: 33%;
   text-decoration: none;
   color: #000000;
-  font-family: inherit;
+  font-family: inherit; 
   font-size: 15px;
   padding: 8px 16px;
   border-radius: 4px;
   margin-top: 1.5rem;
-  transition: color 0.3s ease, background-color 0.3s ease, transform 0.3s ease,
-    box-shadow 0.3s ease;
+  transition: color 0.3s ease, background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 /* Mobile Navbar link hover effect */
@@ -78,9 +76,9 @@ footer {
   background-color: #f97316;
   transform: scale(1.05); /* Smooth scaling effect */
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  transition: color 0.3s ease, background-color 0.3s ease, transform 0.3s ease,
-    box-shadow 0.3s ease;
+  transition: color 0.3s ease, background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
 }
+
 
 /* Navbar Icon */
 #nav_icon {
