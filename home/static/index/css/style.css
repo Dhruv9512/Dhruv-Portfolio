@@ -35,8 +35,8 @@ footer {
   -moz-osx-font-smoothing: grayscale;
   color: #f97316;
   transition: transform 0.3s ease;
-  width: 1em;
-  height: 1em;
+  width: 0.9em;
+  height: 0.9em;
   text-align: center;
   background-size: contain;
 }
