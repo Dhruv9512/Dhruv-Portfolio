@@ -27,18 +27,24 @@ footer {
 
 /* custome icone */
 .custom-icon {
-  color: #f97316;
-  font-size: 16px;
-  transition: transform 0.3s ease;
   display: inline-block;
-  width: 0.9em;
-  height: 0.9em;
+  font: normal normal normal 1rem/1 "FontAwesome";
+  font-size: inherit;
+  text-rendering: auto;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  color: #f97316;
+  transition: transform 0.3s ease;
+  width: 1em;
+  height: 1em;
   text-align: center;
   background-size: contain;
 }
-.custom-icon:hover{
+
+.custom-icon:hover {
   transform: scale(1.3);
 }
+
 
 /* General link styles */
 .navbar-nav a {
