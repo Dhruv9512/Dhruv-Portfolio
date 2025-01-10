@@ -3,7 +3,7 @@
 }
 
 .container {
-    padding: 0; 
+    padding: 0;
     max-width: 100%;
     width: 100%;
 }
@@ -22,8 +22,8 @@
 }
 
 .seemywork-img-container img {
-    width: 100%; 
-    height: auto;
+    width: 100%;
+    height: 100%; /* Ensure the image covers the entire height */
     object-fit: cover;
     object-position: center;
     border-radius: 8px;
@@ -42,13 +42,13 @@
 
 .seemyworklist li p {
     color: black;
-    font-size: 16px;
+    font-size: 21px;  /* Increased by 5px */
     line-height: 1.6;
 }
 
 .seemyworklist li p strong {
     color: #f97316;
-    font-size: 20px;
+    font-size: 25px;  /* Increased by 5px */
 }
 
 .seemyworkh4 {
@@ -57,7 +57,7 @@
     color: #f97316;
     text-shadow: 0 0 5px rgba(255, 150, 50, 0.7);
     font-weight: bold;
-    font-size: 24px; 
+    font-size: 29px; /* Increased by 5px */
 }
 
 @media (max-width: 768px) {
@@ -66,25 +66,26 @@
     }
 
     .seemywork-img-container {
-        max-height: 300px;
+        max-height: 300px; /* Reduced max-height for smaller screens */
     }
 
     .seemywork-img-container img {
         width: 90%;
         max-width: 100%;
+        height: auto; /* Let the height adjust automatically */
     }
 
     .seemyworklist li p {
-        font-size: 14px;
+        font-size: 19px;  /* Increased by 5px */
         line-height: 1.4;
     }
 
     .seemyworklist li p strong {
-        font-size: 16px;
+        font-size: 21px;  /* Increased by 5px */
     }
 
     .seemyworkh4 {
-        font-size: 20px;
+        font-size: 25px;  /* Increased by 5px */
     }
 
     .seemyworklist {
@@ -104,23 +105,24 @@
     }
 
     .seemywork-img-container {
-        max-height: 400px;
+        max-height: 400px; /* Adjusted max-height for larger screens */
     }
 
     .seemywork-img-container img {
         width: 80%;
+        height: auto; /* Let the height adjust based on the width */
     }
 
     .seemyworklist li p {
-        font-size: 15px;
+        font-size: 20px;  /* Increased by 5px */
     }
 
     .seemyworklist li p strong {
-        font-size: 18px;
+        font-size: 23px;  /* Increased by 5px */
     }
 
     .seemyworkh4 {
-        font-size: 22px;
+        font-size: 27px;  /* Increased by 5px */
     }
 
     .seemyworklist {
@@ -146,22 +148,23 @@
 
     .seemywork-img-container img {
         width: 100%;
+        height: 100%; /* Ensures the image covers the entire height */
         object-fit: cover;
     }
 
     .seemyworklist li p {
-        font-size: 12px;
+        font-size: 17px;  /* Increased by 5px */
         line-height: 1.3;
         margin-left: -2.5rem;
         padding: 0;
     }
 
     .seemyworklist li p strong {
-        font-size: 14px;
+        font-size: 19px;  /* Increased by 5px */
     }
 
     .seemyworkh4 {
-        font-size: 18px;
+        font-size: 23px;  /* Increased by 5px */
         margin-top: 1rem;
     }
 
@@ -178,15 +181,16 @@
 
 @media (min-width: 1025px) {
     .seemywork-img-container {
-        max-height: 500px;
+        max-height: 500px; /* Maximum height for larger screens */
     }
 
     .seemywork-img-container img {
         width: 70%;
+        height: auto; /* Adjust height based on width */
     }
 
     .seemyworkh4 {
-        font-size: 24px;
+        font-size: 29px;  /* Increased by 5px */
     }
 
     .seemyworklist {

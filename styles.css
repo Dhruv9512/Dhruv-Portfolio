@@ -1,0 +1,207 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
+
+/* Styling for navigation pill buttons */
+#pills-tab li button {
+  color: black;
+  transition: color 0.3s ease, font-size 0.8s ease;
+  font-size: 1.1em;
+  margin-top: 1.5rem;
+  padding: 10px 20px;
+  border-radius: 5px;
+}
+
+/* Hover effect for pill buttons */
+#pills-tab li button:hover {
+  color: white !important;
+  background-color: #f97316 !important;
+}
+
+/* Active state for pill buttons */
+#pills-tab li button.active {
+  background-color: transparent;
+  color: #f97316;
+  font-size: 1.18em !important;
+  font-weight: bold;
+  transition: color 0.3s ease, text-shadow 0.3s ease;
+}
+
+#pills-tab li button.active:hover {
+  font-weight: normal;
+}
+
+/* Add gap between pill buttons */
+#pills-tab {
+  gap: 2rem;
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+/* Sticky navigation left panel */
+#nav-left {
+  position: sticky;
+  top: 70px;
+  box-shadow: inset 0 4px 15px rgba(0, 0, 0, 0.5),
+    0 8px 20px rgba(0, 0, 0, 0.20), 0 2px 10px rgba(0, 0, 0, 0.20);
+  transition: transform 0.6s ease-in-out, box-shadow 0.6s ease-in-out, background-color 0.6s ease;
+  height: auto;
+  max-height: 55vh;
+  z-index: 1000;
+  border-radius: 8%;
+  padding: 1.2rem;
+  overflow-y: auto;
+  flex-basis: 30%;
+}
+
+@media (max-width: 900px) {
+  /* For tablets and small screens */
+  #pills-tab li button {
+    font-size: 1em;
+    padding: 8px 16px;
+  }
+
+  #pills-tab li button.active {
+    font-size: 1.05em !important;
+  }
+
+  #nav-left {
+    width: 100%;
+    max-height: none;
+    position: static;
+    order: 1;
+    margin-bottom: 15px;
+    font-size: 1.2em;
+    border-radius: 5%;
+  }
+
+  #content-right {
+    padding: 18px;
+    font-size: 15px;
+    margin-top: 10px;
+    order: 2;
+    width: 100%;
+  }
+
+  #pills-tab {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 768px) {
+  /* For smaller screens (Phones) */
+  #nav-left {
+    padding: 0.8rem;
+    font-size: 1em;
+    width: 100%;
+    order: 2;
+  }
+
+  #content-right {
+    padding: 12px;
+    font-size: 14px;
+  }
+
+  #pills-tab li button {
+    font-size: 0.95em;
+    padding: 6px 12px;
+  }
+
+  #pills-tab li button.active {
+    font-size: 1.1em !important;
+  }
+
+  .container {
+    display: block;
+  }
+
+  #pills-tab {
+    gap: 0.8rem;
+  }
+}
+
+@media (max-width: 480px) {
+  /* For very small screens (Mobile Portrait) */
+  #nav-left {
+    width: 100%;
+    top: 60px;
+    border-radius: 8%;
+  }
+
+  #pills-tab li button {
+    font-size: 0.9em;
+    padding: 5px 10px;
+  }
+
+  #content-right {
+    padding: 10px;
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 1115px) {
+  /* For tablets/medium screens */
+  #pills-tab li button {
+    font-size: 1em;
+    padding: 8px 16px;
+  }
+
+  #pills-tab li button.active {
+    font-size: 1.1em !important;
+  }
+
+  #nav-left {
+    width: 90%;
+  }
+
+  #content-right {
+    padding: 20px;
+    font-size: 15px;
+  }
+
+  #pills-tab {
+    gap: 1.5rem;
+  }
+}
+
+/* Styling for content inside the tab */
+.tab-pane p {
+  color: black;
+  font-size: 16px;
+  text-shadow: none;
+}
+
+.tab-pane strong,
+.tab-pane h5 {
+  color: #f97316;
+  font-weight: bold;
+  font-size: 1em;
+}
+
+/* Styling for cards inside the content */
+.about-card {
+  box-shadow: inset 0 4px 15px rgba(0, 0, 0, 0.5),
+    0 8px 20px rgba(0, 0, 0, 0.20), 0 2px 10px rgba(0, 0, 0, 0.20);
+  border-radius: 10px;
+  padding: 22px;
+  margin-bottom: 15px;
+  transition: transform 0.6s ease-in-out, box-shadow 0.6s ease-in-out, background-color 0.6s ease;
+  font-size: 16px;
+}
+
+/* Hover effect for cards */
+.about-card:hover {
+  background: linear-gradient(to top, rgba(255, 165, 0, 0.10), #e0e0e0);
+  transform: scale(1.03);
+}
+
+/* Styling for the content on the right */
+#content-right {
+  padding: 31px;
+  height: auto;
+  overflow-y: auto;
+  margin-top: 20px;
+  font-size: 16px;
+}

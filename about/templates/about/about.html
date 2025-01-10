@@ -2,14 +2,13 @@
 {% load static %}
 
 {% block css %}
-<link rel="stylesheet" href="{% static "about/css/about.css" %}">
+<link rel="stylesheet" href="{% static 'about/css/about.css' %}">
 {% endblock %}
-
 
 {% block content %}
 <div class="container-fluid mt-5 mb-5 row gy-5 d-flex justify-content-between">
-    <div class=" container col-lg-3 col-md-4 col-12  position-sticky" id="nav-left">
-        <ul class="nav nav-pills d-flex flex-column justify-content-around " id="pills-tab" role="tablist">
+    <div class="col-lg-3 col-md-4 col-12 position-sticky" id="nav-left">
+        <ul class="nav nav-pills d-flex flex-column justify-content-around" id="pills-tab" role="tablist">
             <li class="nav-item" role="presentation">
                 <button class="nav-link active" id="pills-home-tab" data-bs-toggle="pill" data-bs-target="#pills-Education" type="button" role="tab" aria-controls="pills-home" aria-selected="true">Education</button>
             </li>
@@ -31,12 +30,12 @@
             <div class="tab-pane fade show active" id="pills-Education" role="tabpanel" aria-labelledby="pills-home-tab" tabindex="0">
                 {% for v in Education %}
                     <div class="about-card">
-                        <h5> {{ v.Name }} </h5>
+                        <h5>{{ v.Name }}</h5>
                         <ul>
-                            <li> <p><strong><u>Institution:</u></strong> &nbsp {{ v.institution }}</p></li>
-                            <li><p><strong><u> Address:</u> </strong> &nbsp {{ v.address }}</p></li>
-                            <li><p><strong><u> Status:</u> </strong> &nbsp {{ v.status }}</p></li>
-                            <li><p><strong><u> Score:</u> </strong> &nbsp {{ v.score }}</p></li>
+                            <li><p><strong><u>Institution:</u></strong> &nbsp {{ v.institution }}</p></li>
+                            <li><p><strong><u> Address:</u></strong> &nbsp {{ v.address }}</p></li>
+                            <li><p><strong><u> Status:</u></strong> &nbsp {{ v.status }}</p></li>
+                            <li><p><strong><u> Score:</u></strong> &nbsp {{ v.score }}</p></li>
                         </ul>
                     </div>
                 {% endfor %}
@@ -52,21 +51,15 @@
                             {% endif %}
                         {% endfor %}
                         <ul>
-                            <li>
-                                <p><strong><u> Skills:</u></strong> &nbsp
+                            <li><p><strong><u> Skills:</u></strong> &nbsp
                                 {% for j in v %}
-                                    {{ j.skill }} ,
+                                    {{ j.skill }},
                                 {% endfor %}
-                                </p>
-                            </li> <br>
-                            <li><strong><u> Proficiency:</u> </strong>
+                            </p></li><br>
+                            <li><strong><u> Proficiency:</u></strong>
                                 <ul>
                                     {% for j in v %}
-                                        <li>
-                                            <p><strong><u> {{ j.skill }}:</u></strong> &nbsp
-                                            {{ j.Proficiency }} </li>
-                                        </p>
-                                        </li>
+                                        <li><p><strong><u> {{ j.skill }}:</u></strong> &nbsp {{ j.Proficiency }}</p></li>
                                     {% endfor %}
                                 </ul>
                             </li>
@@ -128,7 +121,6 @@
 
 {% endblock %}
 
-
 {% block js %}
-<script src="{% static "about/js/about.js" %}"></script>
-{% endblock  %}
+<script src="{% static 'about/js/about.js' %}"></script>
+{% endblock %}

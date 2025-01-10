@@ -23,11 +23,16 @@ def fotter_data(request):
     # Portfolio Logo
     logo_data = MyImage.objects.filter(title="Profile Logo").first()
     leetcode_icon = MyImage.objects.filter(title="Leetcode Icon").first()
-
+    linkedin_icon = MyImage.objects.filter(title="Linkdin").first()
+    github_icon = MyImage.objects.filter(title="Github").first()
+    hackerrank_icon = MyImage.objects.filter(title="Hackerrank").first()
     context = {
         "Image":{
             "Profile_Logo":logo_data,
-            "Leetcode_Icon":leetcode_icon
+            "Leetcode_Icon":leetcode_icon,
+            "Linkedin_Icon":linkedin_icon,
+            "Github_Icon":github_icon,
+            "Hackerrank_Icon":hackerrank_icon
         },
         "Footer":{
             "Address":address_data,
