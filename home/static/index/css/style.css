@@ -1,3 +1,10 @@
+/* Ensure the html and body have full height */
+html, body {
+  height: 100%;
+  margin: 0;
+  font-family: __Inter_Tight_1e1a75, __Inter_Tight_Fallback_1e1a75 !important;
+}
+
 /* Main section styling */
 body {
   display: flex;
@@ -5,28 +12,61 @@ body {
   min-height: 100vh;
   margin: 0;
   background-color: #e6e6e6 !important; /* Light gray background */
-  font-family: __Inter_Tight_1e1a75, __Inter_Tight_Fallback_1e1a75 !important;
 }
 
-main {
-  flex-grow: 1;
-  padding: 20px 0;
-  z-index: -10;
-}
-
+/* Ensure header and footer behave well */
 header {
   z-index: 10;
-  background-color: rgba(230, 230, 230, 0.6); /* Light gray with transparency (80% opacity) */
+  background-color: rgba(230, 230, 230, 0.6); /* Light gray with transparency */
   backdrop-filter: blur(5px); /* Apply blur to the background */
   -webkit-backdrop-filter: blur(10px); /* For Safari support */
   position: relative;
 }
 
-
 footer {
   margin-top: auto;
   padding: 20px 0;
-  background-color: #e6e6e6  !important;
+  background-color: #e6e6e6 !important;
+}
+
+/* Mobile Navbar */
+.offcanvas-header {
+  background-color: #e6e6e6; /* Light gray color */
+  height: 100% !important;
+}
+
+.offcanvas-body {
+  background-color: #e6e6e6; /* Light gray */
+  overflow-y: visible !important;
+  height: 100vh !important; /* Full screen height */
+  min-height: 100vh !important; /* Ensure full screen height even if content is less */
+}
+
+.offcanvas-body nav {
+  flex-grow: 1; /* This allows the nav links to take up the remaining space */
+  overflow-y: visible; /* Allow scrolling if there are too many items */
+}
+
+.offcanvas-body nav a {
+  width: 30%;
+  text-decoration: none;
+  color: #000000; /* Black text */
+  font-family: inherit;
+  font-size: 17px; /* Increased by 1px */
+  padding: 8px 16px;
+  border-radius: 5px;
+  margin-top: 1.5rem;
+  transition: color 0.3s ease, background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Mobile Navbar link hover effect */
+.offcanvas-body nav a:hover {
+  color: white !important;
+  background-color: #f97316;
+  transform: scale(1.05); /* Smooth scaling effect */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  transition: color 0.3s ease, background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+  border-radius: 4px;
 }
 
 /* Custom icon styling */
@@ -37,52 +77,37 @@ footer {
   text-rendering: auto;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  color: #f97316; 
+  color: #f97316;
   transition: transform 0.3s ease;
   width: 1.2em;
   height: 1.2em;
   text-align: center;
   background-size: contain;
 }
-
+.nav-cencel{
+  width: 10%;
+  border: none;
+  background: #e6e6e6;
+  margin-left: 9em;
+}
+.nav-cencel i{
+  font-size: 1.5em
+}
 .custom-icon:hover {
-  transform: scale(1.1); 
+  transform: scale(1.1);
 }
 
-/* General link styles */
+/* Normal navbar */
 .navbar-nav a {
+  font-size: 17px; /* Increased by 1px */
   color: #000000; /* Black text */
-  text-decoration: none;
   font-family: inherit;
-  font-size: 21px; /* Increased by 1px */
   padding: 8px 16px;
+  border-radius: 4px;
   transition: color 0.3s ease, background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-/* Navbar link hover effect */
 .navbar-nav a:hover {
-  color: white;
-  background-color: #f97316;
-  transform: scale(1.05);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  border-radius: 4px;
-}
-
-/* Mobile Navbar */
-.mobile_navbar a {
-  width: 33%;
-  text-decoration: none;
-  color: #000000; /* Black text */
-  font-family: inherit;
-  font-size: 16px; /* Increased by 1px */
-  padding: 8px 16px;
-  border-radius: 4px;
-  margin-top: 1.5rem;
-  transition: color 0.3s ease, background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-/* Mobile Navbar link hover effect */
-.mobile_navbar a:hover {
   color: white !important;
   background-color: #f97316;
   transform: scale(1.05); /* Smooth scaling effect */
@@ -95,11 +120,6 @@ footer {
 #nav_icon {
   color: black !important;
   font-size: 21px; /* Increased by 1px */
-}
-
-/* Offcanvas Menu */
-#offcanvas {
-  background-color: #f5f5f5; /* Light gray */
 }
 
 /* Button Styling */
