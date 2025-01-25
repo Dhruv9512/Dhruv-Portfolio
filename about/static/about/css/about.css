@@ -1,154 +1,249 @@
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
 
-/* Styling for navigation pill buttons */
-#pills-tab li button {
-  color: black;
-  transition: color 0.3s ease, font-size 0.8s ease;
-  font-size: 1.1em;
-  margin-top: 1.5rem;
-}
-
-/* Hover effect for pill buttons */
-#pills-tab li button:hover {
-  color: white !important;
-  background-color: #f97316 !important;
-}
-
-/* Active state for pill buttons */
-#pills-tab li button.active {
-  background-color: transparent;
-  color: #f97316;
-  font-size: 1.18em !important;
-  font-weight: bold;
-  transition: color 0.3s ease, text-shadow 0.3s ease;
-}
-
-#pills-tab li button.active:hover {
-  font-weight: normal;
-}
-
-/* Add gap between pill buttons */
-#pills-tab {
-  gap: 2rem;
-}
-
-/* Sticky navigation left panel */
+/* Left-side Navigation */
 #nav-left {
   position: sticky;
   top: 70px;
-  box-shadow: inset 0 4px 15px rgba(0, 0, 0, 0.5),
-    0 8px 20px rgba(0, 0, 0, 0.20), 0 2px 10px rgba(0, 0, 0, 0.20);
-  transition: transform 0.6s ease-in-out, box-shadow 0.6s ease-in-out, background-color 0.6s ease;
   height: auto;
-  max-height: 55vh; /* Adjusted for better responsiveness */
-  z-index: 1000;
-  border-radius: 8%;
   padding: 1.2rem;
+  max-height: 60vh;
   overflow-y: auto;
+  transition: background-color 0.3s ease; 
 }
 
-/* Styling for content inside the tab */
-.tab-pane p {
-  color: black;
-  font-size: 16px; /* Increased by 1px */
-  text-shadow: none;
+/* Navigation Links */
+#section-nav {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1.2rem;
+  overflow-y: display;
+  height: 100%;
 }
 
-.tab-pane strong,
-.tab-pane h5 {
+#section-nav a::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0px;
+  width: 5px;
+  height: 95%;
+  background-color: #f97316;
+  opacity: 0.6;
+}
+
+#section-nav a::after {
+  content: "";
+  position: absolute;
+  top: 24px;
+  left: 0px;
+  width: 5px;
+  height: 95%;
+  background-color: #f97316;
+  opacity: 0.6;
+}
+
+#section-nav a {
+  font-size: 1.2em;
+  color: #333;
+  text-decoration: none;
+  transition: color 0.3s ease, font-size 0.8s ease, opacity 0.3s ease;
+  padding-left: 10px;
+  opacity: 0.6;
+  position: relative; 
+}
+
+#section-nav a:hover {
   color: #f97316;
-  font-weight: bold;
-  font-size: 1em; /* Increased by 1px */
+  opacity: 1;
 }
 
-/* Styling for cards inside the content */
-.about-card {
-  box-shadow: inset 0 4px 15px rgba(0, 0, 0, 0.5),
-    0 8px 20px rgba(0, 0, 0, 0.20), 0 2px 10px rgba(0, 0, 0, 0.20);
-  border-radius: 10px;
-  padding: 22px;
-  margin-bottom: 15px;
-  transition: transform 0.6s ease-in-out, box-shadow 0.6s ease-in-out, background-color 0.6s ease;
-  font-size: 16px; /* Increased by 1px */
+#section-nav a:hover::before {
+  opacity: 1; 
 }
 
-/* Hover effect for cards */
-.about-card:hover {
-  background: linear-gradient(to top, rgba(255, 165, 0, 0.10), #e0e0e0);
-  transform: scale(1.03);
+#section-nav a:hover::after {
+  opacity: 0.3; 
 }
 
-/* Styling for the content on the right */
+/* Active nav-left when a section is in view */
+#nav-left.active-nav {
+  background-color: rgba(0, 0, 0, 0.05);
+  border-radius: 8%;
+}
+
+/* Content Section Styling */
 #content-right {
-  padding: 31px;
-  height: auto;
-  overflow-y: auto;
-  margin-top: 20px;
-  font-size: 16px; /* Increased by 1px */
+    padding: 31px;
+    height: auto;
+    overflow-y: auto;
+    margin-top: 20px;
+    font-size: 16px;
 }
 
-/* Mobile responsiveness */
+/* Section Styling */
+section {
+    margin-bottom: 40px;
+}
+
+section h2 {
+    font-size: 2em;
+    color: #f97316;
+    margin-bottom: 20px;
+    font-weight: bold;
+}
+
+/* about-sub-card */
+.about-sub-card {
+    margin-bottom: 55px;
+}
+
+/* Skill-Achievements list style */
+#Skill-Achievements {
+    list-style-type: disc;
+    margin-left: 20px;
+    font-size: large;
+    color: #f97316;
+}
+
+/* About Card Styling */
+.about-card {
+    box-shadow: inset 0 4px 15px rgba(0, 0, 0, 0.05),
+                0 8px 20px rgba(0, 0, 0, 0.2),
+                0 2px 10px rgba(0, 0, 0, 0.2);
+    border-radius: 10px;
+    padding: 22px;
+    margin-bottom: 30px;
+    font-size: 16px;
+}
+
+/* Text and List Styling */
+.about-card h5 {
+    color: #333;
+    font-weight: bold;
+    font-size: 1.1em;
+    margin-bottom: 1rem;
+    text-decoration: underline;
+}
+
+.about-card ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.about-card li {
+    margin-bottom: 0px;
+}
+
+.about-card li p {
+    font-size: 16px;
+    color: #333;
+}
+
+.about-card li p strong {
+    font-weight: bold;
+    color: #f97316;
+}
+
+/* Mobile Responsiveness */
 @media (max-width: 900px) {
-  #pills-tab li button {
-    font-size: 15px; /* Increased by 1px */
-  }
+    #section-nav {
+        gap: 1rem;
+    }
 
-  #pills-tab li button.active {
-    font-size: 15px !important; /* Increased by 1px */
-    margin-bottom: 3px;
-  }
+    #section-nav a {
+        font-size: 1.1em;
+    }
 
-  .tab-pane p {
-    font-size: 13px; /* Increased by 1px */
-  }
+    #content-right {
+        padding: 22px;
+        margin-top: 10px;
+    }
 
-  #nav-left {
-    width: 95%;
-    padding: 0.8rem; /* Slightly increased padding */
-    max-height: none;
-    height: auto;
-    order: 1;
-    margin-bottom: 15px;
-    position: static !important;
-    font-size: 1em;
-    text-align: center;
-    border-radius: 2%;
-  }
+    section h2 {
+        font-size: 1.8em;
+    }
 
-  #pills-tab {
-    display: flex;
-    flex-direction: column;
-    align-items: start;
-    gap: 0.3rem;
-  }
+    #nav-left {
+        width: 95%;
+        padding: 0.8rem;
+        margin-bottom: 15px;
+        position: static !important;
+        text-align: center;
+        border-radius: 2%;
+    }
 
-  #content-right {
-    padding: 22px; /* Increased padding */
-    margin-top: 10px;
-    order: 2;
-    width: 100%;
-  }
+    #section-nav {
+        display: flex;
+        flex-direction: column;
+        gap: 0.3rem;
+        align-items: center;
+    }
 
-  .container {
-    display: flex;
-    flex-direction: column;
-  }
+    .about-card {
+        padding: 16px;
+    }
+
+    .container {
+        display: flex;
+        flex-direction: column;
+    }
 }
 
 @media (max-width: 480px) {
-  #nav-left {
-    width: 100%;
-    top: 60px;
-    border-radius: 8%;
-  }
+    #nav-left {
+        width: 100%;
+        top: 60px;
+        border-radius: 8%;
+    }
 
-  #pills-tab li button {
-    font-size: 9px; /* Increased by 1px */
-  }
+    #section-nav a {
+        font-size: 1em;
+    }
+
+    section h2 {
+        font-size: 1.5em;
+    }
 }
 
-@media (max-width: 1115px) {
-  #pills-tab li button {
-    font-size: 0.9em; /* Increased by 1px */
-  }
+/* Below 1279px */
+@media (max-width: 1279px) {
+    #nav-left {
+        display: none; /* Hide the left navigation */
+    }
+
+    #content-right {
+        margin: 0 auto; /* Center the content */
+        max-width: 1100px; /* Optionally, you can set a max-width for better layout */
+        padding: 20px;
+    }
+
+    /* Optional: Adjust section styling for centering */
+    section {
+        margin-bottom: 30px;
+    }
+
+    section h2 {
+        font-size: 1.8em;
+        text-align: center; /* Center the section titles */
+    }
+
+    /* Adjust the navigation styling on smaller screens */
+    #section-nav {
+        display: flex;
+        flex-direction: column;
+        align-items: center; /* Center align the nav items */
+        gap: 1rem;
+    }
+
+    #section-nav a {
+        font-size: 1.2em;
+        text-align: center;
+        padding: 10px;
+    }
+}
+
+/* Smooth Scrolling */
+html {
+    scroll-behavior: smooth;
 }
