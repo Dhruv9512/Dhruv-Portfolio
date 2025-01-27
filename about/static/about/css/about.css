@@ -53,17 +53,18 @@
   position: relative; 
 }
 
-#section-nav a:hover {
+#section-nav a.active {
   color: #f97316;
   opacity: 1;
 }
 
-#section-nav a:hover::before {
+
+#section-nav a.active::before {
   opacity: 1; 
 }
 
-#section-nav a:hover::after {
-  opacity: 0.3; 
+#section-nav a.active::after {
+  opacity: 0.35; 
 }
 
 /* Active nav-left when a section is in view */
