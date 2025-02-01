@@ -1,5 +1,5 @@
 /* Ensure the html and body have full height */
-html{
+html {
   height: 100%;
   margin: 0;
   font-family: __Inter_Tight_1e1a75, __Inter_Tight_Fallback_1e1a75 !important;
@@ -11,13 +11,13 @@ body {
   flex-direction: column;
   min-height: auto !important;
   margin: 0;
-  background-color: #e6e6e6 !important; /* Light gray background */
+  background-color: #F5F5F5 !important; /* Changed to light gray background */
 }
 
 /* Ensure header and footer behave well */
 header {
   z-index: 10;
-  background-color: rgba(230, 230, 230, 0.6); /* Light gray with transparency */
+  background-color: rgba(245, 245, 245, 0.6); /* Light gray with transparency */
   backdrop-filter: blur(5px); /* Apply blur to the background */
   -webkit-backdrop-filter: blur(10px); /* For Safari support */
 }
@@ -25,20 +25,52 @@ header {
 footer {
   margin-top: auto !important;
   padding: 20px 0;
-  background-color: #e6e6e6 !important;
+  background-color: #F5F5F5 !important; /* Changed to F5F5F5 */
 }
 
+/* logo */
+/* Importing a custom font from Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Cabin+Sketch:wght@700&display=swap'); /* Example font */
+
+/* Logo styling */
+#Dhruv_Logo {
+  text-align: center;
+  font-family: 'Cabin Sketch', cursive; /* Custom font for a more unique look */
+}
+
+.portfolio-logo {
+  display: flex;
+  justify-content: center;
+  align-items: end;
+  font-weight: bold;
+  color: #0ACEFE; /* Blue color for a modern feel */
+}
+
+.portfolio {
+  color: #2699FB; /* Lighter gradient blue */
+}
+
+/* Logo in mobile  */
+.portfolio-logo-mobile{
+  display: flex;
+  justify-content: start;
+  align-items: start;
+  font-weight: bold;
+  color: #0ACEFE; 
+  font-size: 1.5em;
+}
 /* Mobile Navbar */
 .offcanvas-header {
-  background-color: #e6e6e6; /* Light gray color */
+  background-color: #F5F5F5; /* Changed to light gray color */
   height: 100% !important;
 }
 
 .offcanvas-body {
-  background-color: #e6e6e6; /* Light gray */
+  background-color: #F5F5F5; /* Changed to light gray */
   overflow-y: visible !important;
   height: 100vh !important; /* Full screen height */
   min-height: 100vh !important; /* Ensure full screen height even if content is less */
+  width: 100% !important;
 }
 
 .offcanvas-body nav {
@@ -61,7 +93,7 @@ footer {
 /* Mobile Navbar link hover effect */
 .offcanvas-body nav a:hover {
   color: white !important;
-  background-color: #f97316;
+  background: linear-gradient(to right, #0ACEFE, #2699FB); /* Gradient background */
   transform: scale(1.05); /* Smooth scaling effect */
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   transition: color 0.3s ease, background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
@@ -76,22 +108,25 @@ footer {
   text-rendering: auto;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  color: #f97316;
+  color: #0ACEFE; /* Gradient color */
   transition: transform 0.3s ease;
   width: 1.2em;
   height: 1.2em;
   text-align: center;
   background-size: contain;
 }
-.nav-cencel{
+
+.nav-cencel {
   width: 10%;
   border: none;
-  background: #e6e6e6;
+  background: #F5F5F5;
   margin-left: 9em;
 }
-.nav-cencel i{
-  font-size: 1.5em
+
+.nav-cencel i {
+  font-size: 1.5em;
 }
+
 .custom-icon:hover {
   transform: scale(1.1);
 }
@@ -108,7 +143,7 @@ footer {
 
 .navbar-nav a:hover {
   color: white !important;
-  background-color: #f97316;
+  background: linear-gradient(to right, #0ACEFE, #2699FB); /* Gradient background */
   transform: scale(1.05); /* Smooth scaling effect */
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   transition: color 0.3s ease, background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
@@ -123,12 +158,12 @@ footer {
 
 /* Button Styling */
 .btn {
-  background-color: #f97316;
+  background: linear-gradient(to right, #0ACEFE, #2699FB); /* Gradient background */
   color: #000000; /* Black text for contrast */
 }
 
 .btn:hover {
-  background-color: #fb964d;
+  background: linear-gradient(to right, #2699FB, #0ACEFE); /* Gradient hover */
 }
 
 /* Footer Styling */
@@ -149,18 +184,18 @@ footer {
   border-radius: 50%;
   width: 30px;
   height: 30px;
-  background-color: antiquewhite;
+  background-color: #F5F5F5; /* Changed to light gray */
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
   transition: background-color 0.3s ease, transform 0.3s ease;
 }
 
 .social_media div:hover {
-  background-color: rgba(254, 101, 12, 0.2);
+  background-color: rgba(10, 206, 254, 0.2);
   transform: scale(1.05);
 }
 
 .social_media i {
-  color: #f97316;
+  color: #0ACEFE; /* Gradient color */
   font-size: 17px; /* Increased by 1px */
   transition: transform 0.3s ease;
 }
@@ -177,20 +212,20 @@ footer {
   border-radius: 50%;
   width: 30px;
   height: 30px;
-  background-color: antiquewhite;
+  background-color: #F5F5F5;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
   transition: background-color 0.3s ease, transform 0.3s ease;
   margin-right: 10px;
 }
 
 .info div i {
-  color: #f97316;
+  color: #0ACEFE; /* Gradient color */
   font-size: 16px; /* Increased by 1px */
   transition: transform 0.3s ease;
 }
 
 .info div:hover {
-  background-color: rgba(254, 101, 12, 0.2);
+  background-color: rgba(10, 206, 254, 0.2);
   transform: scale(1.05);
 }
 
@@ -203,18 +238,22 @@ footer {
 }
 
 .about h4 {
-  color: #f97316;
+  color: #2699FB; /* Gradient color */
   font-family: var(--font-cabinet);
 }
 
 #About_me_footer {
-  color: #f97316;
+  color: #2699FB; /* Gradient color */
 }
 
 /* --------------------------------- Media Queries for Responsiveness -------------------------------- */
 
 /* Small Devices (Mobile - 450px or less) */
 @media (max-width: 450px) {
+  .portfolio-logo {
+    font-size: 1.2em; /* Increased by 0.5em */
+    margin-left: 4em;
+  }
   .navbar-nav a {
     font-size: 15px; /* Increased by 1px */
   }
@@ -244,6 +283,10 @@ footer {
 
 /* Medium Devices (Tablets - between 451px and 768px) */
 @media (min-width: 451px) and (max-width: 768px) {
+  .portfolio-logo {
+    font-size: 1.5em; /* Increased by 0.5em */
+    margin-left: 3em;
+  }
   .navbar-nav a {
     font-size: 16px; /* Increased by 1px */
   }
@@ -273,6 +316,11 @@ footer {
 
 /* Large Devices (Desktops - 769px and up) */
 @media (min-width: 769px) {
+  .portfolio-logo {
+    font-size: 2em; /* Increased by 0.5em */
+    margin-left: 4em;
+  }
+
   .navbar-nav a {
     font-size: 17px; /* Increased by 1px */
   }

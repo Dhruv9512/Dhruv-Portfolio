@@ -14,11 +14,9 @@ def Work(request):
 
 # see my work 
 def seemywork(request,Myid):
-    seemywork = WorkModel.objects.filter(id = int(Myid)).first()
     data = see_my_work.objects.filter(work = int(Myid)).first()
 
     context = {
-        "seemywork":seemywork,
         "Data":data,
     }
     return render(request,"see_my_work/see_my_work.html",context)

@@ -27,7 +27,9 @@
             <!-- Logo -->
             <div class="row justify-content-start w-50">
                 <div class="col-6 col-lg-3">
-                    <img src="{{ Image.Profile_Logo.image }}" class="img-fluid" alt="Logo" id="Dhruv_Logo">
+                    <div class="portfolio-logo" id="Dhruv_Logo">
+                        <span class="logo-text">Dhruv</span><span class="logo-text portfolio">Portfolio</span>
+                    </div>
                 </div>
             </div>
             <!-- Toggle Button for mobile view -->
@@ -49,8 +51,10 @@
 
         <!-- Mobile Navbar -->
         <div class="offcanvas offcanvas-start position-fixed" tabindex="-1" id="offcanvas" aria-labelledby="offcanvasLabel">
-            <div class="offcanvas-header d-flex justify-content-between gap-2">
-                <img src="{{ Image.Profile_Logo.image }}" class="img-fluid w-50" alt="Logo">
+            <div class="offcanvas-header d-flex justify-content-between">
+                <div class="portfolio-logo-mobile" >
+                    <span class="logo-text">Dhruv</span><span class="logo-text portfolio">Portfolio</span>
+                </div>
                 <button type="button" class="nav-cencel" data-bs-dismiss="offcanvas" aria-label="Close">
                     <i class="fa-solid fa-xmark"></i>
                 </button>
