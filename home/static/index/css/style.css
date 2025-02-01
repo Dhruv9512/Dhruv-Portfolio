@@ -58,6 +58,7 @@ footer {
   font-weight: bold;
   color: #0ACEFE; 
   font-size: 1.5em;
+  font-family: 'Cabin Sketch', cursive; 
 }
 /* Mobile Navbar */
 .offcanvas-header {
@@ -251,7 +252,7 @@ footer {
 /* Small Devices (Mobile - 450px or less) */
 @media (max-width: 450px) {
   .portfolio-logo {
-    font-size: 1.2em; /* Increased by 0.5em */
+    font-size: 1.4em; /* Increased by 0.5em */
     margin-left: 4em;
   }
   .navbar-nav a {
