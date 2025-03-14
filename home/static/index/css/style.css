@@ -1,0 +1,386 @@
+@import url("https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap");
+@import url('https://fonts.googleapis.com/css2?family=Cabin+Sketch:wght@700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&display=swap');
+
+/* Ensure the html and body have full height */
+html {
+    height: 100%;
+    margin: 0;
+    font-family: 'Poppins', sans-serif; /* Updated font */
+}
+
+/* Main section styling */
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh; /* Ensure full height */
+    margin: 0;
+    background-color: rgba(245, 245, 245, 0.9);
+}
+body::-webkit-scrollbar {
+    display: none; /* Hide scrollbar */
+}
+
+/* Ensure header and footer behave well */
+header {
+    z-index: 10;
+    backdrop-filter: blur(5px); /* Apply blur to the background */
+    padding: 0.25rem; /* Add padding for better spacing */
+    box-shadow: 0 0.125rem 0.3125rem rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+}
+
+footer {
+    margin-top: auto;
+    padding: 1.25rem 0; 
+}
+
+/* Logo styling */
+#Dhruv_Logo {
+    text-align: center;
+    font-family: 'Cabin Sketch', cursive; /* Custom font for a more unique look */
+}
+
+.portfolio-logo {
+    display: flex;
+    justify-content: center;
+    align-items: center; /* Center vertically */
+    font-weight: bold;
+    color: #0ACEFE; /* Blue color for a modern feel */
+    font-size: 2rem; /* Increased font size for better visibility */
+}
+
+.portfolio {
+    color: #2699FB; /* Lighter gradient blue */
+}
+
+/* Logo in mobile */
+.portfolio-logo-mobile {
+    display: flex;
+    justify-content: start;
+    align-items: start;
+    font-weight: bold;
+    color: #0ACEFE; 
+    font-size: 1.5rem;
+    font-family: 'Cabin Sketch', cursive; 
+}
+
+/* Mobile Navbar */
+.offcanvas-header {
+    background-color: #F5F5F5; /* Changed to light gray color */
+    height: 100% !important;
+    width: 100vw !important;
+}
+
+.offcanvas-body {
+    background-color: #F5F5F5; /* Changed to light gray */
+    overflow-y: visible !important;
+    height: 100vh !important; /* Full screen height */
+    min-height: 100vh !important; /* Ensure full screen height even if content is less */
+    width: 100vw !important;
+}
+
+.offcanvas-body nav {
+    flex-grow: 1; /* This allows the nav links to take up the remaining space */
+    overflow-y: visible; /* Allow scrolling if there are too many items */
+}
+
+.offcanvas-body nav a {
+    width: 35%; /* Full width for better alignment */
+    text-decoration: none;
+    color: #000000; /* Black text */
+    font-family: 'Poppins', sans-serif;
+    font-size: 1.0625rem; /* Increased by 1px */
+    padding: 0.625rem 0.9375rem; /* Adjusted padding for better spacing */
+    border-radius: 0.3125rem;
+    margin-top: 0.625rem; /* Consistent margin */
+    transition: color 0.3s ease, background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Mobile Navbar link hover effect */
+.offcanvas-body nav a:hover {
+    color: white !important;
+    background: linear-gradient(to right, #0ACEFE, #2699FB); /* Gradient background */
+    transform: scale(1.05); /* Smooth scaling effect */
+    box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.2);
+}
+
+/* Custom icon styling */
+.custom-icon {
+    display: inline-block;
+    font: normal normal normal 1rem/1 "FontAwesome";
+    font-size: inherit;
+    text-rendering: auto;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    color: #0ACEFE; /* Gradient color */
+    transition: transform 0.3s ease;
+    width: 1.5em; /* Increased size for better visibility */
+    height: 1.5em; /* Increased size for better visibility */
+    text-align: center;
+    background-size: contain;
+}
+
+.nav-cencel {
+    width: 10%;
+    border: none;
+    background: #F5F5F5;
+    margin-left: 9em;
+}
+
+.nav-cencel i {
+    font-size: 1.5em;
+}
+
+.custom-icon:hover {
+    transform: scale(1.1);
+}
+
+/* Normal navbar */
+.navbar-nav a {
+    font-size: 1.0625rem; /* Increased by 1px */
+    color: #000000; /* Black text */
+    font-family: 'Poppins', sans-serif;
+    padding: 0.625rem 0.9375rem; /* Adjusted padding for better spacing */
+    border-radius: 0.25rem;
+    transition: color 0.3s ease, background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.navbar-nav a:hover {
+    color: white !important;
+    background: linear-gradient(to right, #0ACEFE, #2699FB); /* Gradient background */
+    transform: scale(1.05); /* Smooth scaling effect */
+    box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.2);
+}
+
+/* Navbar Icon */
+#nav_icon {
+    color: black !important;
+    font-size: 1.3125rem; /* Increased by 1px */
+}
+
+/* Change link color to white when scrolled */
+.navbar.scrolled .nav-link {
+    color: #F5F5F5 !important; /* Change link color to white */
+}
+
+/* Button Styling */
+.btn {
+    background: linear-gradient(to right, #0ACEFE, #2699FB); /* Gradient background */
+    color: #000000; /* Black text for contrast */
+}
+
+.btn:hover {
+    background: linear-gradient(to right, #2699FB, #0ACEFE); /* Gradient hover */
+}
+
+/* Footer Styling */
+.copyright p {
+    color: #000000; /* Black text */
+    text-align: center;
+    margin: 0;
+}
+
+.social_media {
+    display: flex;
+    justify-content: center;
+    gap: 0.9375rem; /* 15px */
+    margin-top: 1.25rem; /* 20px */
+}
+
+.social_media div {
+    border-radius: 50%;
+    width: 1.875rem; /* 30px */
+    height: 1.875rem; /* 30px */
+    background-color: #F5F5F5; /* Changed to light gray */
+    box-shadow: 0 0.125rem 0.3125rem rgba(0, 0, 0, 0.2);
+    transition: background-color 0.3s ease, transform 0.3s ease;
+    margin-bottom: 2.5rem; /* 40px */
+}
+
+.social_media div:hover {
+    background-color: rgba(10, 206, 254, 0.2);
+    transform: scale(1.05);
+}
+
+.social_media i {
+    color: #0ACEFE; /* Gradient color */
+    font-size: 1.0625rem; /* Increased by 1px */
+    transition: transform 0.3s ease;
+}
+
+.social_media div:hover i {
+    transform: scale(1.1);
+}
+
+.info p {
+    color: #000000; /* Black text */
+}
+
+.info div {
+    border-radius: 50%;
+    width: 1.875rem; /* 30px */
+    height: 1.875rem; /* 30px */
+    background-color: #F5F5F5;
+    box-shadow: 0 0.125rem 0.3125rem rgba(0, 0, 0, 0.2);
+    transition: background-color 0.3s ease, transform 0.3s ease;
+    margin-right: 0.625rem; /* 10px */
+}
+
+.info div i {
+    color: #0ACEFE; /* Gradient color */
+    font-size: 1rem; /* Increased by 1px */
+    transition: transform 0.3s ease;
+}
+
+.info div:hover {
+    background-color: rgba(10, 206, 254, 0.2);
+    transform: scale(1.05);
+}
+
+.info div:hover i {
+    transform: scale(1.1);
+}
+
+.about p {
+    color: #000000; /* Black text */
+}
+
+.about h4 {
+    color: #2699FB; /* Gradient color */
+    font-family: 'Poppins', sans-serif;
+}
+
+/* --------------------------------- Media Queries for Responsiveness -------------------------------- */
+
+/* Small Devices (Mobile - 450px or less) */
+@media (max-width: 450px) {
+    .portfolio-logo {
+        font-size: 1.4rem; /* Increased by 0.5em */
+        margin-left: 4em;
+    }
+    .navbar-nav a {
+        font-size: 0.9375rem; /* Increased by 1px */
+    }
+
+    .mobile_navbar a {
+        font-size: 1.1875rem; /* Increased by 1px */
+    }
+
+    #nav_icon {
+        font-size: 1.1875rem; /* Increased by 1px */
+    }
+
+    .social_media i {
+        font-size: 1.1875rem; /* Increased by 1px */
+    }
+
+    .social_media div {
+        width: 1.875rem; /* 30px */
+        height: 1.875rem; /* 30px */
+    }
+
+    .info div {
+        width: 1.625rem; /* Increased by 1px */
+        height: 1.625rem; /* Increased by 1px */
+    }
+
+    /* Chat icon responsive styles */
+    #open-chat {
+        width: 3rem; /* Smaller size for mobile */
+        height: 3rem; /* Smaller size for mobile */
+        bottom: calc(1rem + 1vh); /* Adjust position for smaller screens */
+        right: calc(1rem + 1vw); /* Adjust position for smaller screens */
+    }
+}
+
+/* Medium Devices (Tablets - between 451px and 768px) */
+@media (min-width: 451px) and (max-width: 768px) {
+    .portfolio-logo {
+        font-size: 1.5rem; /* Increased by 0.5em */
+        margin-left: 3em;
+    }
+    .navbar-nav a {
+        font-size: 1rem; /* Increased by 1px */
+    }
+
+    .mobile_navbar a {
+        font-size: 1.25rem; /* Increased by 1px */
+    }
+
+    #nav_icon {
+        font-size: 1.25rem; /* Increased by 1px */
+    }
+
+    .social_media i {
+        font-size: 1.25rem; /* Increased by 1px */
+    }
+
+    .social_media div {
+        width: 1.9375rem; /* 31px */
+        height: 1.9375rem; /* 31px */
+    }
+
+    .info div {
+        width: 1.8125rem; /* 29px */
+        height: 1.8125rem; /* 29px */
+    }
+
+    /* Chat icon responsive styles */
+    #open-chat {
+        width: 3.25rem; /* Slightly smaller size for tablets */
+        height: 3.25rem; /* Slightly smaller size for tablets */
+        bottom: calc(1.125rem + 1vh); /* Adjust position for tablets */
+        right: calc(1.125rem + 1vw); /* Adjust position for tablets */
+    }
+}
+
+/* Large Devices (Desktops - 769px and up) */
+@media (min-width: 769px) {
+    .portfolio-logo {
+        font-size: 2rem; /* Increased by 0.5em */
+        margin-left: 4em;
+    }
+
+    .navbar-nav a {
+        font-size: 1.0625rem; /* Increased by 1px */
+    }
+
+    .mobile_navbar a {
+        font-size: 1.3125rem; /* Increased by 1px */
+    }
+
+    #nav_icon {
+        font-size: 1.3125rem; /* Increased by 1px */
+    }
+
+    .social_media i {
+        font-size: 1.3125rem; /* Increased by 1px */
+    }
+
+    .social_media div {
+        width: 2.25rem; /* Increased by 1px */
+        height: 2.25rem; /* Increased by 1px */
+    }
+
+    .info div {
+        width: 1.9375rem; /* Increased by 1px */
+        height: 1.9375rem; /* Increased by 1px */
+    }
+}
+
+/* Chat icon styling */
+#open-chat {
+    position: fixed;
+    bottom: calc(1.25rem + 1vh); /* Adjusted for better visibility */
+    right: calc(1.25rem + 2vw); /* Adjusted for better visibility */
+    width: 3.5rem; /* Default size */
+    height: 3.5rem; /* Default size */
+    cursor: pointer; /* Pointer cursor */
+    z-index: 1000; /* Ensure it is above other elements */
+}
+
+/* Optional: Add hover effect for the chat icon */
+#open-chat:hover {
+    transform: scale(1.05); /* Slightly enlarge on hover */
+    transition: transform 0.5s ease; /* Smooth transition */
+}

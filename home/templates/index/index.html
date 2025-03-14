@@ -1,0 +1,128 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Dhruv Sharma's Portfolio showcasing web development and design skills.">
+    <meta name="keywords" content="web development, portfolio, Django, Bootstrap">
+    <meta name="author" content="Dhruv Sharma">
+    <title>Portfolio</title>
+    <link rel="stylesheet" href="styles.css?v=2">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'index/css/style.css' %}">
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    {% block css %}
+    {% endblock %}
+
+</head>
+<body>
+
+<!-- Chatbot Icon -->
+<a href="{% url 'cheat' %}">
+    <img src="{% static 'index/img/cheatboaticon.gif' %}" alt="Chatbot Icon" id="open-chat" style="cursor: pointer; width: 150px; height: 120px;">
+</a> 
+    {% comment %} ---------------------------------Header---------------------------{% endcomment %}
+    <header class="container-fluid position-sticky top-0 main_header shadow-sm">
+        <nav class="navbar navbar-expand-lg">
+            <!-- Logo -->
+            <div class="row justify-content-start w-50">
+                <div class="col-6 col-lg-3">
+                    <div class="portfolio-logo" id="Dhruv_Logo">
+                        <span class="logo-text">Dhruv</span><span class="logo-text portfolio">Portfolio</span>
+                    </div>
+                </div>
+            </div>
+            <!-- Toggle Button for mobile view -->
+            <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvas">
+                <i class="fa-solid fa-bars" id="nav_icon"></i>
+            </button>
+            <!-- Desktop Navbar -->
+            <div class="collapse navbar-collapse justify-content-end" id="collapse">
+                <div class="navbar-nav gap-5">
+                    {% url "home" as home %}
+                    <a href="{{ home }}" class="nav-link">Home</a>
+                    {% url "about me" as about %}
+                    <a href="{{ about }}" class="nav-link">About me</a>
+                    {% url "Work" as work %}
+                    <a href="{{ work }}" class="nav-link">My Work</a>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Mobile Navbar -->
+        <div class="offcanvas offcanvas-start position-fixed" tabindex="-1" id="offcanvas" aria-labelledby="offcanvasLabel">
+            <div class="offcanvas-header d-flex justify-content-between">
+                <div class="portfolio-logo-mobile" >
+                    <span class="logo-text">Dhruv</span><span class="logo-text portfolio">Portfolio</span>
+                </div>
+                <button type="button" class="nav-cencel" data-bs-dismiss="offcanvas" aria-label="Close">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div class="offcanvas-body">
+                <nav class="d-flex flex-column">
+                    <a href="{{ home }}" class="nav-link">Home</a>
+                    <a href="{{ about }}" class="nav-link">About me</a>
+                    <a href="{{ work }}" class="nav-link">My Work</a>
+                </nav>
+
+                <!-- Social Media Icons -->
+                <div class="social_media d-flex justify-content-around mt-5">
+                    <div class="d-flex justify-content-center align-items-center"><a href="{{ Footer.Hackerrank.content }}"><img src="{{ Image.Hackerrank_Icon.image }}" class="custom-icon"></img></a></div>
+                    <div class="d-flex justify-content-center align-items-center"><a href="{{ Footer.Linkedin.content }}"><img src="{{ Image.Linkedin_Icon.image }}" class="custom-icon"></img></a></div>
+                    <div class="d-flex justify-content-center align-items-center"><a href="{{ Footer.Github.content }}"><img src="{{ Image.Github_Icon.image }}" class="custom-icon"></img></a></div>
+                    <div class="d-flex justify-content-center align-items-center"><a href="{{ Footer.Leetcode.content }}"><img src="{{ Image.Leetcode_Icon.image }}" class="custom-icon"></img></a></div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    {% comment %}------------------------Content-----------------------{% endcomment %}
+    <main class="container-fluid h-100 w-100 z-0">
+        {% block content %}
+        {% endblock %}
+    </main>
+    
+
+    {% comment %} --------------------------Footer-------------------------------{% endcomment %}
+    <footer class="container-fluid position-relative bottom-0 z-0 main_footer shadow-lg">
+        <div class="container-fluid">
+            <div class="row gy-5">
+                <div class="col-md-6 col-12">
+                    <div class="info g-5">
+                        <div class="d-flex justify-content-center align-items-center"><i class="fa-solid fa-location-dot"></i></div><p>{{ Footer.Address.content }}</p>
+                        <div class="d-flex justify-content-center align-items-center"><i class="fa-solid fa-phone "></i></div><p>{{ Footer.Mobile_Number.content }}</p>
+                        <div class="d-flex justify-content-center align-items-center"><i class="fa-solid fa-envelope"></i></div><p>{{ Footer.Email.content }}</p>
+                    </div>
+                </div>
+                <div class="col-md-6 col-12">
+                    <div class="about d-flex justify-content-between flex-column">
+                        <h4 class="text-center mb-4 ms-lg-5 text-decoration-underline" id="About_me_footer">About me</h4>
+                        <p class="text-start mb-5 ms-lg-5">{{ Footer.about_me.content }}</p>
+                    </div>
+                    <div class="social_media d-flex justify-content-around mb-5">
+                        <div class="d-flex justify-content-center align-items-center"><a href="{{ Footer.Hackerrank.content }}"><img src="{{ Image.Hackerrank_Icon.image }}" class="custom-icon"></img></a></div>
+                        <div class="d-flex justify-content-center align-items-center"><a href="{{ Footer.Linkedin.content }}"><img src="{{ Image.Linkedin_Icon.image }}" class="custom-icon"></img></a></div>
+                        <div class="d-flex justify-content-center align-items-center"><a href="{{ Footer.Github.content }}"><img src="{{ Image.Github_Icon.image }}" class="custom-icon"></img></a></div>
+                        <div class="d-flex justify-content-center align-items-center"><a href="{{ Footer.Leetcode.content }}"><img src="{{ Image.Leetcode_Icon.image }}" class="custom-icon"></img></a></div>
+                    </div>
+                </div>
+            </div>
+            <div class="row d-flex justify-content-md-center mt-md-4 me-md-5 mt-0 ms-lg-3">
+                <div class="container text-center copyright">
+                    <p>Copyright © {{ Current_year }} by Dhruv Sharma</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+     <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src= " {% static "index/js/index.js" %} "></script>
+    {% block js %}{% endblock %}
+</body>
+</html>

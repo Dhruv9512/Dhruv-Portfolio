@@ -1,0 +1,31 @@
+{% extends "index/index.html" %}
+{% load static %}
+
+{% comment %} CSS link {% endcomment %}
+{% block css %}
+<link rel="stylesheet" href="{% static "home/css/home.css" %}">
+{% endblock %}
+
+{% comment %} Home content {% endcomment %}
+{% block content %}
+<div class="container-fluid d-flex align-items-center justify-content-center vh-100" id="main_div" >
+  <div class="row w-100 d-flex justify-content-center justify-content-lg-around">
+  
+    <!-- Intro Section -->
+    <div class="col-lg-7 col-12 d-flex flex-column justify-content-center align-items-center text-center main_intro_div">
+      <div class="intro">
+        <p class="self" style="font-size: 1.5em;">HEY THERE!</p>
+        <h4 style="font-size: 2.5em;">I AM DHRUV SHARMA</h4>
+        <p class="self" style="font-size: 1.2em;">My Portfolio is a representation of all that I've learned and accomplished as a B.C.A student.</p><br>
+        <a class="btn btn-primary Resume" download href="{{ home_Image.Resume.content }}" title="Resume"><i class="fa fa-download"></i> Download Resume</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% comment %} JS link {% endcomment %}
+{% block js %}
+<script src="{% static "home/js/home.js" %}"></script>
+{% endblock %}

@@ -1,0 +1,116 @@
+{% extends "index/index.html" %}
+{% load static %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'about/css/about.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-5 mb-5 row gy-5 d-flex justify-content-between z-0">
+    <div class="col-lg-3 col-md-4 col-12" id="nav-left">
+        <!-- Left-side Navigation links -->
+        <ul class="nav d-flex flex-column justify-content-start" id="section-nav">
+            <li><a href="#education-section" aria-label="Navigate to Education section" aria-controls="education-section">Education</a></li>
+            <li><a href="#skills-section" aria-label="Navigate to Skills section" aria-controls="skills-section">My Skills</a></li>
+            <li><a href="#certifications-section" aria-label="Navigate to Certifications section" aria-controls="certifications-section">Certifications & Achievements</a></li>
+            <li><a href="#work-section" aria-label="Navigate to Work Experience section" aria-controls="work-section">Work Experience / Internships</a></li>
+        </ul>
+    </div>
+
+    <div class="col-lg-9 col-md-8 col-12" id="content-right">
+        <!-- Content Sections -->
+        <section id="education-section" class="about-card">
+            <h2>Education</h2> <hr>
+            {% for v in Education %}
+            <div class="about-sub-card">
+                <h4>{{ v.Name }}</h4>
+                <ul>
+                    <li><p><strong>Institution:</strong> &nbsp {{ v.institution }}</p></li>
+                    <li><p><strong>Address:</strong> &nbsp {{ v.address }}</p></li>
+                    <li><p><strong>Status:</strong> &nbsp {{ v.status }}</p></li>
+                    <li><p><strong>Score:</strong> &nbsp {{ v.score }}</p></li>
+                </ul>
+                <br><br><br>
+            </div>
+            {% endfor %}
+        </section>
+
+        <section id="skills-section" class="about-card">
+            <h2>My Skills</h2> <hr>
+            {% for v in Skill %}
+            <div class="about-sub-card">
+                {% for j in v %}
+                {% if forloop.counter == 1 %}
+                <h4>{{ j.Name }}</h4>
+                {% endif %}
+                {% endfor %}
+                <ul>
+                    <li><p><strong>Skills:</strong> &nbsp
+                        {% for j in v %}
+                        {{ j.skill }}{% if not forloop.last %}, {% endif %}
+                        {% endfor %}
+                    </p></li>
+                    <li><p><strong>Proficiency:</strong></p>
+                        {% for j in v %}
+                        <li><p><b>{{ j.skill }}:</b> &nbsp {{ j.Proficiency }}</p></li>
+                        {% endfor %}
+                    </li>
+                </ul>
+                <br><br><br>
+            </div>
+            {% endfor %}
+        </section>
+
+        <section id="certifications-section" class="about-card">
+            <h2>Certifications & Achievements</h2> <hr>
+            {% for v in Certifications_and_Achievements.certification_link %}
+            <div class="about-sub-card">
+                {% for j in v %}
+                {% if forloop.counter == 1 %}
+                <h4>{{ j.name }}</h4>
+                {% endif %}
+                <ul>
+                    <li><p><strong>{{ j.title }}</strong> &nbsp {{ j.content }}</p></li>
+                    <li><p><strong>Link:</strong> &nbsp <a href="{{ j.link }}">View Certificate</a></p></li>
+                </ul>
+                {% endfor %}
+            </div> <br><br><br>
+            {% endfor %}
+
+            {% for v in Certifications_and_Achievements.Achievements %}
+            <div class="about-sub-card">
+                {% for j in v %}
+                {% if forloop.counter == 1 %}
+                <h4>{{ j.name }}</h4>
+                {% endif %}
+                <ul>
+                    <li id="Skill-Achievements"><p>{{ j.content }}</p></li>
+                </ul>
+                {% endfor %}
+            </div>
+            {% endfor %}
+        </section>
+
+        <section id="work-section" class="about-card">
+            <h2>Work Experience / Internships</h2> <hr>
+            {% for v in Work_Experience_and_Internships %}
+            <div class="about-sub-card">
+                {% for j in v %}
+                {% if forloop.counter == 1 %}
+                <h4>{{ j.name }}</h4>
+                {% endif %}
+                <ul>
+                    <li><p><strong>{{ j.title }}</strong> &nbsp {{ j.content }}</p></li>
+                </ul>
+                {% endfor %}
+            </div><br><br><br>
+            {% endfor %}
+        </section>
+    </div>
+</div>
+{% endblock %}
+
+{% block js %}
+<script src="{% static 'about/js/about.js' %}"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+{% endblock %}

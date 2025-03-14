@@ -1,0 +1,156 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
+
+/* Styling for navigation pill buttons */
+#pills-tab li button {
+    color: black;
+    transition: color 0.3s ease, font-size 0.8s ease;
+    font-size: 1em;
+    margin-top: 1.5rem;
+}
+
+/* Hover effect for pill buttons */
+#pills-tab li button:hover {
+    color: white !important;
+    background-color: #f97316 !important;
+}
+
+/* Active state for pill buttons */
+#pills-tab li button.active {
+    background-color: transparent;
+    color: #f97316;
+    font-size: 1.08em !important;
+    font-weight: bold;
+    transition: color 0.3s ease, text-shadow 0.3s ease;
+}
+#pills-tab li button.active:hover {
+    font-weight: normal;
+}
+
+/* Add gap between pill buttons */
+#pills-tab {
+    gap: 2rem;
+}
+
+/* Sticky navigation left panel */
+#nav-left {
+    position: sticky;
+    top: 70px;
+    box-shadow: inset 0 4px 15px rgba(0, 0, 0, 0.5),
+    0 8px 20px rgba(0, 0, 0, 0.20), 0 2px 10px rgba(0, 0, 0, 0.20);
+    transition: transform 0.6s ease-in-out, box-shadow 0.6s ease-in-out, background-color 0.6s ease;
+    height: auto;
+    max-height: 50vh;
+    z-index: 1000;
+    border-radius: 8%;
+    padding: 1rem;
+    overflow-y: visible;
+}
+
+/* Hover effect for nav-left */
+#nav-left:hover {
+    background: linear-gradient(to top, rgba(255, 165, 0, 0.10), #e0e0e0);
+    transform: scale(1.03);
+}
+
+/* Styling for content inside the tab */
+.tab-pane p {
+    color: black;
+    font-size: 15px;
+    text-shadow: none;
+}
+
+.tab-pane strong,
+.tab-pane h5 {
+    color: #f97316;
+    font-weight: bold;
+}
+
+/* Styling for cards inside the content */
+.about-card {
+    box-shadow: inset 0 4px 15px rgba(0, 0, 0, 0.5),
+    0 8px 20px rgba(0, 0, 0, 0.20), 0 2px 10px rgba(0, 0, 0, 0.20);
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 15px;
+    transition: transform 0.6s ease-in-out, box-shadow 0.6s ease-in-out, background-color 0.6s ease;
+}
+
+/* Hover effect for cards */
+.about-card:hover {
+    background: linear-gradient(to top, rgba(255, 165, 0, 0.10), #e0e0e0);
+    transform: scale(1.03);
+}
+
+/* Styling for the content on the right */
+#content-right {
+    padding: 30px;
+    height: auto;
+    overflow-y: auto;
+    margin-top: 20px;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 900px) {
+    #pills-tab li button {
+        font-size: 14px;
+    }
+
+    #pills-tab li button.active {
+        font-size: 14px !important;
+        margin-bottom: 3px;
+    }
+
+    .tab-pane p {
+        font-size: 12px;
+    }
+
+    #nav-left {
+        width: 95%;
+        padding: 0.5rem;
+        max-height: none;
+        height: auto;
+        order: 1;
+        margin-bottom: 15px;
+        position: static !important;
+        font-size: 0.9em;
+        text-align: center;
+        border-radius: 2%;
+    }
+
+    #pills-tab {
+        display: flex;
+        flex-direction: column;
+        align-items: start;
+        gap: 0.3rem;
+    }
+
+    #content-right {
+        padding: 20px;
+        margin-top: 10px;
+        order: 2;
+        width: 100%;
+    }
+
+    .container {
+        display: flex;
+        flex-direction: column;
+    }
+}
+
+@media (max-width: 480px) {
+    #nav-left {
+        width: 100%;
+        top: 60px;
+        border-radius: 8%;
+    }
+
+    #pills-tab li button {
+        font-size: 8px;
+    }
+}
+
+@media (max-width: 1115px) {
+    #pills-tab li button {
+        font-size: 0.8em;
+    }
+}

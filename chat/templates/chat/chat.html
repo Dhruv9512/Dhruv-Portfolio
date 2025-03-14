@@ -1,0 +1,27 @@
+{% extends "index/index.html" %}
+{% load static %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'chat/css/chat.css' %}"> <!-- Link to your custom chatbot CSS -->
+{% endblock %}
+
+{% block content %}
+
+
+    <div class="chatbot-messages mt-2" id="chatbot-messages">
+        <div class="message bot-message">Hello! How can I assist you today?</div>
+    </div>
+    <div class="chatbot-input">
+        <div class="w-100">
+        <input type="text" id="user-input" placeholder="Type your message..." onkeypress="handleKeyPress(event)">
+        <button id="send-button" onclick="sendMessage()">Send</button>
+        </div>
+        <p class="m-auto mt-3">By using Blackbox you agree to the Terms and Privacy.</p>
+    </div>
+    <div id="loading" class="loading" style="display: none;">Loading...</div>
+
+{% endblock %}
+
+{% block js %}
+<script src="{% static 'chat/js/chat.js' %}"></script> <!-- Link to your custom chatbot JS -->
+{% endblock %}
