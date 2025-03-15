@@ -7,18 +7,21 @@
 
 {% block content %}
 
-
-    <div class="chatbot-messages mt-2" id="chatbot-messages">
-        <div class="message bot-message">Hello! How can I assist you today?</div>
+    
+    <div class="chatbot-messages mt-2 mb-4 " id="chatbot-messages">
+       <div class="d-flex wh-100 row">
+            <img src="{% static "index/img/cheatboaticon.gif" %}" alt="MyBoat icon" class="col-2 myboat-icon">
+            <div class="message bot-message col-10">Hello! How can I assist you today?</div>
+        </div> 
     </div>
+    
     <div class="chatbot-input">
         <div class="w-100">
         <input type="text" id="user-input" placeholder="Type your message..." onkeypress="handleKeyPress(event)">
         <button id="send-button" onclick="sendMessage()">Send</button>
         </div>
-        <p class="m-auto mt-3">By using Blackbox you agree to the Terms and Privacy.</p>
+        <p class="m-auto mt-3">My chatbot is still under development, so it may occasionally make mistakes.</p>
     </div>
-    <div id="loading" class="loading" style="display: none;">Loading...</div>
 
 {% endblock %}
 

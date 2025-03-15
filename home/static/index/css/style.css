@@ -286,8 +286,8 @@ footer {
 
     /* Chat icon responsive styles */
     #open-chat {
-        width: 3rem; /* Smaller size for mobile */
-        height: 3rem; /* Smaller size for mobile */
+        width: 2.5rem; /* Smaller size for mobile */
+        height: 2.5rem; /* Smaller size for mobile */
         bottom: calc(1rem + 1vh); /* Adjust position for smaller screens */
         right: calc(1rem + 1vw); /* Adjust position for smaller screens */
     }
@@ -327,8 +327,8 @@ footer {
 
     /* Chat icon responsive styles */
     #open-chat {
-        width: 3.25rem; /* Slightly smaller size for tablets */
-        height: 3.25rem; /* Slightly smaller size for tablets */
+        width: 2.75rem; /* Slightly smaller size for tablets */
+        height: 2.75rem; /* Slightly smaller size for tablets */
         bottom: calc(1.125rem + 1vh); /* Adjust position for tablets */
         right: calc(1.125rem + 1vw); /* Adjust position for tablets */
     }
@@ -366,21 +366,29 @@ footer {
         width: 1.9375rem; /* Increased by 1px */
         height: 1.9375rem; /* Increased by 1px */
     }
+
+    /* Chat icon responsive styles */
+    #open-chat {
+        width: 3rem; /* Default size for desktops */
+        height: 3rem; /* Default size for desktops */
+        bottom: calc(1.25rem + 1vh); /* Adjust position for desktops */
+        right: calc(1.25rem + 1vw); /* Adjust position for desktops */
+    }
 }
 
 /* Chat icon styling */
 #open-chat {
     position: fixed;
-    bottom: calc(1.25rem + 1vh); /* Adjusted for better visibility */
-    right: calc(1.25rem + 2vw); /* Adjusted for better visibility */
-    width: 3.5rem; /* Default size */
-    height: 3.5rem; /* Default size */
+    bottom: calc(1.25rem + 1vh); /* Adjust for better visibility */
+    right: calc(1.25rem + 1vw); /* Adjusted for better visibility */
+    width: 3rem; /* Default size */
+    height: 3rem; /* Default size */
     cursor: pointer; /* Pointer cursor */
     z-index: 1000; /* Ensure it is above other elements */
+    transition: transform 0.5s ease; /* Smooth transition */
 }
 
 /* Optional: Add hover effect for the chat icon */
 #open-chat:hover {
     transform: scale(1.05); /* Slightly enlarge on hover */
-    transition: transform 0.5s ease; /* Smooth transition */
 }

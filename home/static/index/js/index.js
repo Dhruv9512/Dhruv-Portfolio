@@ -46,4 +46,3 @@ function addMessage(sender, text) {
     messagesContainer.appendChild(messageDiv);
     messagesContainer.scrollTop = messagesContainer.scrollHeight; // Scroll to the bottom
 }
-
