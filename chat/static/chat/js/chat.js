@@ -26,7 +26,7 @@ async function fetchdata(messageText) {
         }
 
         const data = await response.json(); // Wait for the JSON data to be parsed
-        console.log(data); // Handle the data returned from the API
+        console.log(data.response); // Handle the data returned from the API
 
         // Assuming the bot's response is in data.response
         addMessage(data.response); // Add bot response to chat

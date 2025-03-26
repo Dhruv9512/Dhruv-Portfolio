@@ -1,6 +1,7 @@
 from pathlib import Path
 import os
 from decouple import config
+import logging
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -29,6 +30,14 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     'corsheaders',
 ]
+
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        "LOCATION": "chat_memory_cache",
+    }
+}
+
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -66,6 +75,18 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "Portfolio.wsgi.application"
 
+# Configure logging for debugging database connection issues
+logger = logging.getLogger(__name__)
+
+# Log database connection parameters for debugging
+logger.debug("Database configuration:")
+logger.debug(f"ENGINE: {config('POSTGRES_ENGINE', default='django.db.backends.postgresql')}")
+logger.debug(f"NAME: {config('POSTGRES_DATABASE', default='')}")
+logger.debug(f"USER: {config('POSTGRES_USER', default='')}")
+logger.debug(f"PASSWORD: {config('POSTGRES_PASSWORD', default='')}")
+logger.debug(f"HOST: {config('POSTGRES_HOST', default='127.0.0.1')}")
+logger.debug(f"PORT: {config('POSTGRES_PORT', default='5432')}")
+
 # Database configuration using environment variables
 DATABASES = {
     "default": {
@@ -73,10 +94,11 @@ DATABASES = {
         "NAME": config("POSTGRES_DATABASE"),
         "USER": config("POSTGRES_USER"),
         "PASSWORD": config("POSTGRES_PASSWORD"),
-        "HOST": config("POSTGRES_HOST", default="127.0.0.1"),
+        "HOST": config("POSTGRES_HOST", default="127.0.0.1"),  
         "PORT": config("POSTGRES_PORT", default="5432"),
     }
 }
+
 BLOB_READ_WRITE_TOKEN = os.getenv('BLOB_READ_WRITE_TOKEN')
 # Media files (added to serve user-uploaded content like images)
 MEDIA_URL = "/media/"
