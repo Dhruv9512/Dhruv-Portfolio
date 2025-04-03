@@ -4,14 +4,14 @@ from dotenv import load_dotenv
 from django.core.cache import cache
 from langchain_google_genai import ChatGoogleGenerativeAI, GoogleGenerativeAIEmbeddings
 from langchain.schema import HumanMessage, AIMessage, SystemMessage, Document
-from langchain.memory import ConversationBufferMemory
+from langchain.memory import ConversationSummaryMemory
 from qdrant_client import QdrantClient
 from langchain.chains.question_answering import load_qa_chain
 
 # Load environment variables
 load_dotenv()
 
-# Initialize model
+# Initialize Gemini model
 model = ChatGoogleGenerativeAI(
     model="gemini-1.5-pro",
     temperature=0.7,
@@ -21,15 +21,15 @@ qa_chain = load_qa_chain(model, chain_type="stuff")
 
 # Function to get similar answers
 def get_similar_ans(query, k=5):
-    collection_name = "my_collection"  
+    collection_name = "my_collection"
     client = QdrantClient(
         url=os.environ.get("QDRANT_URL"),
         api_key=os.environ.get("QDRANT_API_KEY")
     )
 
-    embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001")  
+    embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
     query_embedding = embeddings.embed_query(query)
-    
+
     # Search in Qdrant
     search_results = client.search(
         collection_name=collection_name,
@@ -39,15 +39,32 @@ def get_similar_ans(query, k=5):
 
     return search_results
 
+# Function to summarize conversation using Gemini
+def summarize_conversation(messages):
+    """Summarizes conversation history using Gemini."""
+    conversation_text = "\n".join([f"{msg.type}: {msg.content}" for msg in messages])
+
+    summary_prompt = (
+        "Summarize the following conversation while keeping the key details and context:\n\n"
+        f"{conversation_text}\n\n"
+        "Provide a concise but detailed summary."
+    )
+
+    summary_response = model.invoke(summary_prompt)
+    return summary_response.content if summary_response else "No summary available."
+
 # Function to retrieve memory from cache
 def get_memory():
     messages_data = cache.get("chat_memory_messages")
-    memory = ConversationBufferMemory(return_messages=True)
+    
+    memory = ConversationSummaryMemory(
+        llm=model,  # Using Gemini to summarize conversations
+        return_messages=True
+    )
 
     if messages_data:
         try:
-            messages = pickle.loads(messages_data)
-            memory.chat_memory.messages = messages
+            memory.chat_memory.messages = pickle.loads(messages_data)
         except Exception as e:
             print("Error loading messages from cache:", e)
 
@@ -59,7 +76,7 @@ def get_memory():
                 "If asked, 'What is your name?', always reply exactly: 'I am Dhruv Sharma, an interviewer.' "
                 "If the data is not available, say: 'I don't have that information at the moment.'"
     )
-    
+
     if not memory.chat_memory.messages or not any(isinstance(msg, SystemMessage) for msg in memory.chat_memory.messages):
         memory.chat_memory.add_message(system_message)
 
@@ -68,6 +85,10 @@ def get_memory():
 # Function to save memory
 def save_memory(memory):
     try:
+        # Summarize before saving to keep it efficient
+        summary = summarize_conversation(memory.chat_memory.messages)
+        memory.chat_memory.messages = [SystemMessage(content=summary)]
+        
         cache.set("chat_memory_messages", pickle.dumps(memory.chat_memory.messages), timeout=None)
     except Exception as e:
         print("Error saving messages:", e)
@@ -77,17 +98,15 @@ memory = get_memory()
 
 # Chatbot function
 def chat_boat(user_input):
-    print("Before Adding User Message:", memory.chat_memory.messages)  # Debugging
     memory.chat_memory.add_message(HumanMessage(content=user_input))
-    print("After Adding User Message:", memory.chat_memory.messages)  # Debugging
 
     try:
         query_results = get_similar_ans(user_input)
         query_docs = [Document(page_content=str(v.payload)) for v in query_results]
-        
+
         response = qa_chain.run({
-            "input_documents": query_docs, 
-            "question":  memory.chat_memory.messages,
+            "input_documents": query_docs,
+            "question": memory.chat_memory.messages,
         })
     except Exception as e:
         error_message = f"Error processing query: {str(e)}"
