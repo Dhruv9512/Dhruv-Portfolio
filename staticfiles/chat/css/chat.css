@@ -1,0 +1,216 @@
+body {
+    overflow: hidden; /* Prevent scrolling on the body */
+}
+
+.chatbot-header {
+    background-color: #007BFF; /* Bootstrap primary color */
+    color: white; /* Header text color */
+    padding: 15px; /* Increased padding for a more spacious look */
+    display: flex;
+    justify-content: center; /* Center the title */
+    align-items: center;
+    font-size: 1.5em; /* Larger font size */
+    font-weight: bold; /* Bold text */
+}
+
+.chatbot-messages {
+    flex: 1; /* Allow messages to take up available space */
+    overflow-y: scroll; /* Enable scrolling */
+    padding: 15px; /* Increased padding */
+    height: 75vh; 
+    background-color: white;
+    scrollbar-width: none; 
+}
+
+/* Hide scrollbar for WebKit browsers (Chrome, Safari) */
+.chatbot-messages::-webkit-scrollbar {
+    display: none; /* Hide scrollbar */
+}
+
+.message {
+    margin: 12px 0; /* Increased margin for better spacing */
+    padding: 12px; /* Increased padding for comfort */
+    border-radius: 8px; /* Larger border radius */
+    max-width: 80%; /* Limit message width */
+    word-wrap: break-word; /* Ensure long words break to the next line */
+}
+
+.bot-message {
+    background-color: #e1f5fe; /* Light blue for bot messages */
+    text-align: left; /* Align text to the left */
+    border: 1px solid #b3e5fc; /* Optional: Add a border for better definition */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+}
+
+.user-message {
+    background-color: #c8e6c9; /* Light green for user messages */
+    color: black; 
+    text-align: right; /* Align user messages to the right */
+    margin-left: auto; /* Align user messages to the right */
+    border: 1px solid #a5d6a7; /* Optional: Add a border for better definition */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+}
+
+#loading {
+    max-width: 80%;
+    background-color: #e1f5fe;
+    border-radius: 4px; 
+    height: 40px;
+    animation: shimmer 1.5s infinite; 
+    background-image: linear-gradient(90deg, #ccc 25%, #f0f0f0 50%, #ccc 75%); 
+    background-size: 200% 100%; 
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: 200% 0; 
+    }
+    100% {
+        background-position: 0 0; 
+    }
+}
+
+.chatbot-input {
+    display: flex;
+    flex-direction: column; /* Stack children vertically */
+    padding: 10px;
+    background-color: #ffffff; 
+    position: fixed;
+    bottom: 0;
+    width: 100vw;
+}
+
+.chatbot-input .input-container {
+    display: flex; /* Keep input and button in a row */
+    width: 100%; /* Full width */
+}
+
+.chatbot-input input {
+    flex: 1; /* Take up available space */
+    padding: 12px; /* Increased padding */
+    border: 1px solid #ccc; /* Input border */
+    border-radius: 5px; /* Rounded corners */
+    font-size: 1em; /* Consistent font size */
+    width: 90%;
+}
+
+.chatbot-input button {
+    margin-left: 10px; /* Space between input and button */
+    background-color: #007BFF; /* Button background */
+    color: white; /* Button text color */
+    border: none; /* No border */
+    padding: 12px 20px; /* Button padding */
+    border-radius: 5px; /* Rounded corners */
+    cursor: pointer; /* Pointer cursor */
+    transition: background-color 0.3s; /* Smooth transition */
+}
+
+.chatbot-input button:hover {
+    background-color: #0056b3; /* Darker blue on hover */
+}
+
+.chatbot-input p {
+    text-align: center; /* Center the text */
+    margin-top: 10px; /* Space above the paragraph */
+    font-size: 0.875rem; /* Adjust font size as needed */
+    color: #666; /* Optional: Change text color */
+}
+
+/* myboat-icon */
+.myboat-icon{
+    width: 90px;
+    height: 60px;
+    margin-right: -10px;
+}
+
+/* Responsive Styles */
+@media (max-width: 967px) {
+    .chatbot-header {
+        font-size: 1.25em; /* Smaller font size for mobile */
+        padding: 10px; /* Adjust padding */
+    }
+
+    .chatbot-messages {
+        padding: 10px; /* Adjust padding */
+    }
+
+    .message {
+        padding: 10px; /* Adjust padding for messages */
+    }
+
+    .chatbot-input {
+        padding: 5px; /* Adjust padding */
+    }
+
+    .chatbot-input input {
+        padding: 10px; /* Adjust padding */
+        font-size: 0.9em; /* Smaller font size for input */
+    }
+
+    .chatbot-input button {
+        padding: 10px; /* Adjust padding */
+        font-size: 0.9em; /* Smaller font size for button */
+    }
+
+    .chatbot-input p {
+        font-size: 0.75rem; /* Smaller font size for paragraph */
+    }
+}
+
+@media (max-width: 768px) {
+    .chatbot-header {
+        font-size: 1.2em; /* Further reduce font size for smaller screens */
+    }
+
+    .chatbot-messages{
+        height: 80vh;
+    }
+
+    .chatbot-input input {
+        padding: 8px; /* Further adjust padding */
+        font-size: 0.85em; /* Further reduce font size for input */
+        width: 85%;
+    }
+
+    .chatbot-input button {
+        padding: 8px; /* Further adjust padding */
+        font-size: 0.85em; /* Further reduce font size for button */
+    }
+
+    .chatbot-input p {
+        font-size: 0.65rem; /* Further reduce font size for paragraph */
+    }
+}
+
+@media (max-width: 480px) {
+    .chatbot-header {
+        font-size: 1.1em; /* Further reduce font size for very small screens */
+    }
+
+    .chatbot-input {
+        padding: 3px; /* Further adjust padding */
+    }
+
+    .chatbot-input input {
+        padding: 6px; /* Further adjust padding */
+        font-size: 0.8em; /* Further reduce font size for input */
+        width: 80%;
+    }
+
+    .chatbot-input button {
+        padding: 6px; /* Further adjust padding */
+        font-size: 0.8em; /* Further reduce font size for button */
+    }
+
+    .chatbot-messages{
+        height: 80vh;
+    }
+
+    .chatbot-input p {
+        font-size: 0.6rem; /* Further reduce font size for paragraph */
+    }
+
+    .myboat-icon{
+        margin-left: -20px;
+    }
+}
