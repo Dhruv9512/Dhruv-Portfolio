@@ -1,12 +1,13 @@
-import pickle
 import os
+import pickle
 from dotenv import load_dotenv
 from django.core.cache import cache
 from langchain_google_genai import ChatGoogleGenerativeAI, GoogleGenerativeAIEmbeddings
 from langchain.schema import HumanMessage, AIMessage, SystemMessage, Document
-from langchain.memory import ConversationSummaryMemory
+from langchain_community.chat_message_histories import ChatMessageHistory
 from qdrant_client import QdrantClient
-from langchain.chains.question_answering import load_qa_chain
+from langchain.chains.combine_documents.stuff import create_stuff_documents_chain
+from langchain.prompts import PromptTemplate
 
 # Load environment variables
 load_dotenv()
@@ -17,7 +18,17 @@ model = ChatGoogleGenerativeAI(
     temperature=0.7,
     google_api_key=os.environ.get("GOOGLE_API_KEY"),
 )
-qa_chain = load_qa_chain(model, chain_type="stuff")
+
+# Define QA Prompt
+qa_prompt = PromptTemplate.from_template(
+    "Use the following context to answer the question:\n\n{context}\n\nQuestion: {question}"
+)
+
+# Create QA Chain
+qa_chain = create_stuff_documents_chain(llm=model, prompt=qa_prompt)
+
+# Initialize Chat Memory
+memory = ChatMessageHistory()
 
 # Function to get similar answers
 def get_similar_ans(query, k=5):
@@ -28,7 +39,12 @@ def get_similar_ans(query, k=5):
     )
 
     embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
-    query_embedding = embeddings.embed_query(query)
+    
+    try:
+        query_embedding = embeddings.embed_query(query)
+    except Exception as e:
+        print(f"Embedding error: {e}")
+        return []
 
     # Search in Qdrant
     search_results = client.search(
@@ -39,32 +55,13 @@ def get_similar_ans(query, k=5):
 
     return search_results
 
-# Function to summarize conversation using Gemini
-def summarize_conversation(messages):
-    """Summarizes conversation history using Gemini."""
-    conversation_text = "\n".join([f"{msg.type}: {msg.content}" for msg in messages])
-
-    summary_prompt = (
-        "Summarize the following conversation while keeping the key details and context:\n\n"
-        f"{conversation_text}\n\n"
-        "Provide a concise but detailed summary."
-    )
-
-    summary_response = model.invoke(summary_prompt)
-    return summary_response.content if summary_response else "No summary available."
-
 # Function to retrieve memory from cache
 def get_memory():
     messages_data = cache.get("chat_memory_messages")
-    
-    memory = ConversationSummaryMemory(
-        llm=model,  # Using Gemini to summarize conversations
-        return_messages=True
-    )
 
     if messages_data:
         try:
-            memory.chat_memory.messages = pickle.loads(messages_data)
+            memory.messages = pickle.loads(messages_data)
         except Exception as e:
             print("Error loading messages from cache:", e)
 
@@ -77,45 +74,47 @@ def get_memory():
                 "If the data is not available, say: 'I don't have that information at the moment.'"
     )
 
-    if not memory.chat_memory.messages or not any(isinstance(msg, SystemMessage) for msg in memory.chat_memory.messages):
-        memory.chat_memory.add_message(system_message)
-
-    return memory
+    if not memory.messages or not any(isinstance(msg, SystemMessage) for msg in memory.messages):
+        memory.add_message(system_message)
 
 # Function to save memory
-def save_memory(memory):
+def save_memory():
     try:
-        # Summarize before saving to keep it efficient
-        summary = summarize_conversation(memory.chat_memory.messages)
-        memory.chat_memory.messages = [SystemMessage(content=summary)]
-        
-        cache.set("chat_memory_messages", pickle.dumps(memory.chat_memory.messages), timeout=None)
+        cache.set("chat_memory_messages", pickle.dumps(memory.messages), timeout=None)
     except Exception as e:
         print("Error saving messages:", e)
 
 # Retrieve memory
-memory = get_memory()
+get_memory()
 
 # Chatbot function
-def chat_boat(user_input):
-    memory.chat_memory.add_message(HumanMessage(content=user_input))
+def chat_bot(user_input):
+    memory.add_message(HumanMessage(content=user_input))
 
     try:
         query_results = get_similar_ans(user_input)
-        query_docs = [Document(page_content=str(v.payload)) for v in query_results]
 
-        response = qa_chain.run({
-            "input_documents": query_docs,
-            "question": memory.chat_memory.messages,
+        # Extract relevant text content from search results
+        query_docs = []
+        for v in query_results:
+            if isinstance(v.payload, dict):
+                content = "\n".join([f"{key}: {value}" for key, value in v.payload.items() if key != "source_file"])
+                query_docs.append(Document(page_content=content, metadata={"source": v.payload.get("source_file", "unknown")}))
+
+
+        # Call QA Chain with properly formatted inputs
+        response = qa_chain.invoke({
+            "context": query_docs,  
+            "question": str(memory.messages),  
         })
+
     except Exception as e:
         error_message = f"Error processing query: {str(e)}"
         print(error_message)
         return error_message
 
-    memory.chat_memory.add_message(AIMessage(content=str(response)))
-    save_memory(memory)  # Save memory to cache
-
-    print("Saved Memory:", pickle.loads(cache.get("chat_memory_messages")))  # Debug stored memory
+    # Save AI response to memory
+    memory.add_message(AIMessage(content=str(response)))
+    save_memory()  
 
     return response

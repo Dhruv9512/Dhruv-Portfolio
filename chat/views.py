@@ -5,7 +5,7 @@ from django.http import JsonResponse
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 from dotenv import load_dotenv
-from .app import chat_boat
+from .app import chat_bot
 
 
 # Load environment variables
@@ -27,7 +27,7 @@ def cheatapi(request):
             print("Received Message:", message)  # ✅ Debug print
 
             # Chat with the bot
-            response = chat_boat(message)
+            response = chat_bot(message)
             print("API Response:", response)  # ✅ Debug print
            
             return JsonResponse({'response': response})
