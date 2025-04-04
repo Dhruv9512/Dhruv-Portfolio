@@ -1,10 +1,9 @@
 import os
-import pickle
 from dotenv import load_dotenv
 from django.core.cache import cache
 from langchain_google_genai import ChatGoogleGenerativeAI, GoogleGenerativeAIEmbeddings
 from langchain.schema import HumanMessage, AIMessage, SystemMessage, Document
-from langchain_community.chat_message_histories import ChatMessageHistory
+from langchain.memory import ConversationSummaryMemory
 from qdrant_client import QdrantClient
 from langchain.chains.combine_documents.stuff import create_stuff_documents_chain
 from langchain.prompts import PromptTemplate
@@ -27,8 +26,8 @@ qa_prompt = PromptTemplate.from_template(
 # Create QA Chain
 qa_chain = create_stuff_documents_chain(llm=model, prompt=qa_prompt)
 
-# Initialize Chat Memory
-memory = ChatMessageHistory()
+# Initialize ConversationSummaryMemory
+memory = ConversationSummaryMemory(llm=model)
 
 # Function to get similar answers
 def get_similar_ans(query, k=5):
@@ -55,41 +54,13 @@ def get_similar_ans(query, k=5):
 
     return search_results
 
-# Function to retrieve memory from cache
-def get_memory():
-    messages_data = cache.get("chat_memory_messages")
-
-    if messages_data:
-        try:
-            memory.messages = pickle.loads(messages_data)
-        except Exception as e:
-            print("Error loading messages from cache:", e)
-
-    # Ensure system message is present
-    system_message = SystemMessage(
-        content="From now on, you are **Dhruv Sharma**, an interviewer. "
-                "You are NOT an AI assistant, NOT a chatbot, and NOT a language model. "
-                "Your job is to conduct interviews and answer questions based on the database. "
-                "If asked, 'What is your name?', always reply exactly: 'I am Dhruv Sharma, an interviewer.' "
-                "If the data is not available, say: 'I don't have that information at the moment.'"
-    )
-
-    if not memory.messages or not any(isinstance(msg, SystemMessage) for msg in memory.messages):
-        memory.add_message(system_message)
-
-# Function to save memory
-def save_memory():
-    try:
-        cache.set("chat_memory_messages", pickle.dumps(memory.messages), timeout=None)
-    except Exception as e:
-        print("Error saving messages:", e)
-
-# Retrieve memory
-get_memory()
-
 # Chatbot function
 def chat_bot(user_input):
-    memory.add_message(HumanMessage(content=user_input))
+    # Retrieve the current conversation summary
+    conversation_summary = memory.load_memory_variables({}).get('history', '')
+
+    # Add user input to memory
+    memory.save_context({"input": user_input}, {"output": ""})
 
     try:
         query_results = get_similar_ans(user_input)
@@ -101,11 +72,10 @@ def chat_bot(user_input):
                 content = "\n".join([f"{key}: {value}" for key, value in v.payload.items() if key != "source_file"])
                 query_docs.append(Document(page_content=content, metadata={"source": v.payload.get("source_file", "unknown")}))
 
-
         # Call QA Chain with properly formatted inputs
         response = qa_chain.invoke({
-            "context": query_docs,  
-            "question": str(memory.messages),  
+            "context": query_docs,
+            "question": conversation_summary + "\n" + user_input,
         })
 
     except Exception as e:
@@ -114,7 +84,6 @@ def chat_bot(user_input):
         return error_message
 
     # Save AI response to memory
-    memory.add_message(AIMessage(content=str(response)))
-    save_memory()  
+    memory.save_context({"input": user_input}, {"output": str(response)})
 
     return response
