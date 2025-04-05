@@ -21,7 +21,7 @@ COPY environment.yml /app/
 RUN conda env create -f /app/environment.yml
 
 # Pre-download SentenceTransformer model
-RUN conda run -n portfolioenv python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('all-mpnet-base-v2')"
+RUN conda run -n portfolioenv python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('paraphrase-MiniLM-L6-v2')"
 
 # Set environment variables
 ENV PATH /opt/conda/envs/portfolioenv/bin:$PATH

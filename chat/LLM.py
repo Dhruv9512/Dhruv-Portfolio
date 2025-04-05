@@ -24,7 +24,7 @@ model = ChatGoogleGenerativeAI(
 qa_chain = load_qa_chain(llm=model, chain_type="stuff")
 
 # Initialize SentenceTransformer model
-sentence_model = SentenceTransformer("all-mpnet-base-v2")
+sentence_model = SentenceTransformer("paraphrase-MiniLM-L6-v2")
 
 # Function: Get similar answers using Qdrant and sentence-transformers
 def get_similar_ans(query, k=5):
@@ -96,6 +96,11 @@ def save_memory(memory):
 def chat_bot(user_input):
     memory = get_memory()
 
+    # 🔥 Step 1: Increment message count
+    message_count = cache.get("message_count", 0)
+    message_count += 1
+    cache.set("message_count", message_count)
+
     # Add user's message to memory
     memory.chat_memory.add_message(HumanMessage(content=user_input))
 
@@ -114,7 +119,14 @@ def chat_bot(user_input):
         memory.chat_memory.add_message(AIMessage(content=str(response)))
 
         # Save updated memory
-        save_memory(memory)
+          # 🔥 Step 6: Summarize if message_count >= 5
+        if message_count >= 5:
+            save_memory(memory)  # Summarizes and resets
+            cache.set("message_count", 0)  # 🔥 Reset counter
+
+        else:
+            # 🔥 Still save updated messages without summary
+            cache.set("chat_memory_messages", pickle.dumps(memory.chat_memory.messages), timeout=None)
 
         return response
 
