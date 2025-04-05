@@ -9,10 +9,23 @@ conda activate portfolioenv
 echo "Conda environment activated."
 
 echo "Waiting for database to be ready..."
-while ! nc -z $POSTGRES_HOST $POSTGRES_PORT; do
-  sleep 1
-done
-echo "Database is ready."
+python <<EOF
+import socket
+import time
+import os
+
+host = os.getenv("POSTGRES_HOST", "localhost")
+port = int(os.getenv("POSTGRES_PORT", 5432))
+
+while True:
+    try:
+        with socket.create_connection((host, port), timeout=5):
+            print("Database is ready.")
+            break
+    except (socket.timeout, ConnectionRefusedError):
+        print("Waiting for database...")
+        time.sleep(1)
+EOF
 
 echo "Applying database migrations..."
 python manage.py migrate --noinput
