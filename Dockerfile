@@ -20,6 +20,9 @@ COPY environment.yml /app/
 # Create the Conda environment (named "portfolioenv")
 RUN conda env create -f /app/environment.yml
 
+# Pre-download SentenceTransformer model
+RUN conda run -n portfolioenv python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('all-mpnet-base-v2')"
+
 # Set environment variables
 ENV PATH /opt/conda/envs/portfolioenv/bin:$PATH
 ENV DEBIAN_FRONTEND=noninteractive
