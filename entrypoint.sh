@@ -35,4 +35,4 @@ python manage.py collectstatic --noinput
 
 PORT=${PORT:-8000}  # Use Render's provided port or fallback to 8000
 echo "Starting Gunicorn server on port ${PORT}..."
-exec gunicorn --bind 0.0.0.0:${PORT:-8000} --workers 3 --timeout 120 Portfolio.wsgi:application
+exec gunicorn --bind 0.0.0.0:${PORT:-8000} --workers=1 --threads=2 --timeout 120 Portfolio.wsgi:application

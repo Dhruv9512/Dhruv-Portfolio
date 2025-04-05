@@ -46,5 +46,5 @@ EXPOSE 8000
 # Use Tini as init system
 ENTRYPOINT ["/usr/bin/tini", "--"]
 
-# Run entrypoint script to start Gunicorn
-CMD ["/app/entrypoint.sh"]
+# Run entrypoint script to start Gunicorn with fewer workers
+CMD ["/app/entrypoint.sh", "--workers=1", "--threads=2"]

@@ -101,6 +101,9 @@ DATABASES["default"]["OPTIONS"] = {
     "application_name": "ep-sparkling-glitter-a4qz9qz2"
 }
 
+# Add connection pooling to reduce memory usage
+DATABASES["default"]["CONN_MAX_AGE"] = 60  # Keep connections open for 60 seconds
+
 BLOB_READ_WRITE_TOKEN = os.getenv('BLOB_READ_WRITE_TOKEN')
 # Media files (added to serve user-uploaded content like images)
 MEDIA_URL = "/media/"
