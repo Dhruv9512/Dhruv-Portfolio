@@ -17,6 +17,6 @@ conda run --no-capture-output -n portfolioenv python manage.py migrate --noinput
 echo "Collecting static files..."
 conda run --no-capture-output -n portfolioenv python manage.py collectstatic --noinput
 
-PORT=${PORT:-8000}  # Use 8000 if PORT is not set
+PORT=${PORT:-8000}  # Default to 8000 if PORT is not set
 echo "Starting Gunicorn server on port ${PORT}..."
-exec conda run --no-capture-output -n portfolioenv gunicorn Portfolio.wsgi:application --bind 0.0.0.0:$PORT --workers 3
+exec conda run --no-capture-output -n portfolioenv gunicorn Portfolio.wsgi:application --bind 0.0.0.0:${PORT} --workers 3
