@@ -1,0 +1,27 @@
+name: portfolioenv
+channels:
+  - defaults
+  - conda-forge
+dependencies:
+  - python=3.11
+  - pip
+  - pip:
+      - Django>=3.2
+      - gunicorn>=22.0.0,<23.0.0
+      - whitenoise
+      - python-decouple
+      - django-environ
+      - django-cors-headers
+      - dj-database-url
+      - psycopg2-binary
+      - gevent
+      - gunicorn[gevent]
+      # LangChain & AI-related packages
+      - langchain
+      - langchain_community
+      - langchain_openai
+      - langchain-google-genai
+      - google-generativeai
+      - langchain-experimental
+      - langgraph
+      - qdrant-client
