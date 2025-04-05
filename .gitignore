@@ -1,10 +1,11 @@
-# Ignore virtual environment
-venv/
+# Ignore Conda environment
+portfolioenv/
 
 # Ignore environment variable files
 .env
+.env.*
 
-# Ignore cache and compiled files
+# Ignore Python cache and OS-specific files
 __pycache__/
 *.pyc
 *.pyo
