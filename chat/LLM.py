@@ -96,36 +96,40 @@ def save_memory(memory):
 def chat_bot(user_input):
     memory = get_memory()
 
-    # 🔥 Step 1: Increment message count
+    # Step 1: Count messages to decide when to summarize
     message_count = cache.get("message_count", 0)
     message_count += 1
     cache.set("message_count", message_count)
 
-    # Add user's message to memory
-    memory.chat_memory.add_message(HumanMessage(content=user_input))
+    # Step 2: Add user's message to memory
+    if not memory.chat_memory.messages or memory.chat_memory.messages[-1].content != user_input:
+        memory.chat_memory.add_message(HumanMessage(content=user_input))
 
     try:
-        # Get relevant documents from vector DB
+        # Step 3: Vector DB search (returns top relevant docs)
         query_results = get_similar_ans(user_input)
         query_docs = [Document(page_content=str(hit.payload)) for hit in query_results]
 
-        # Run QA chain with latest input
+        # Step 4: Prepare compact chat context from last 5 messages
+        chat_context = "\n".join(
+            [f"{msg.type}: {msg.content}" for msg in memory.chat_memory.messages[-5:]]
+        )
+
+        # Step 5: Run QA Chain
         response = qa_chain.run({
             "input_documents": query_docs,
-            "question": memory.chat_memory.messages
+            "question": chat_context
         })
 
-        # Add bot's response to memory
+        # Step 6: Add Gemini’s response to memory
         memory.chat_memory.add_message(AIMessage(content=str(response)))
 
-        # Save updated memory
-          # 🔥 Step 6: Summarize if message_count >= 5
+        # Step 7: Summarize and reset if 5 messages done
         if message_count >= 5:
-            save_memory(memory)  # Summarizes and resets
-            cache.set("message_count", 0)  # 🔥 Reset counter
-
+            save_memory(memory)  # Summarize and store
+            cache.set("message_count", 0)  # Reset counter
         else:
-            # 🔥 Still save updated messages without summary
+            # Just store messages (no summary yet)
             cache.set("chat_memory_messages", pickle.dumps(memory.chat_memory.messages), timeout=None)
 
         return response
