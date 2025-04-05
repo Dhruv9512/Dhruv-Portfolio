@@ -96,6 +96,11 @@ DATABASES = {
     )
 }
 
+# Add OPTIONS to resolve the SNI inconsistency
+DATABASES["default"]["OPTIONS"] = {
+    "application_name": "ep-sparkling-glitter-a4qz9qz2"
+}
+
 BLOB_READ_WRITE_TOKEN = os.getenv('BLOB_READ_WRITE_TOKEN')
 # Media files (added to serve user-uploaded content like images)
 MEDIA_URL = "/media/"
