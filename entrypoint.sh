@@ -9,9 +9,8 @@ conda activate portfolioenv
 echo "Conda environment activated."
 
 echo "Waiting for database to be ready..."
-while ! python manage.py showmigrations &>/dev/null; do
-    echo "Database not ready, waiting..."
-    sleep 2
+while ! nc -z $POSTGRES_HOST $POSTGRES_PORT; do
+  sleep 1
 done
 echo "Database is ready."
 
@@ -23,4 +22,4 @@ python manage.py collectstatic --noinput
 
 PORT=${PORT:-8000}  # Use Render's provided port or fallback to 8000
 echo "Starting Gunicorn server on port ${PORT}..."
-exec gunicorn Portfolio.wsgi:application --bind 0.0.0.0:${PORT} --workers 3
+exec gunicorn --bind 0.0.0.0:$PORT --workers 3 --timeout 120 Portfolio.wsgi:application

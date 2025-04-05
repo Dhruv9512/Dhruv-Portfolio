@@ -1,0 +1,16 @@
+version: '3'
+
+services:
+  db:
+    # ...existing code...
+
+  web:
+    # ...existing code...
+    environment:
+      DATABASE_URL: postgres://your_db_user:your_db_password@db:5432/your_db_name
+      PORT: 8000
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3

@@ -17,7 +17,6 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['dhruv-portfolio-f5ux.onrender.com', 'localhost', '127.0.0.1']
 
-
 # Application definition
 INSTALLED_APPS = [
     "chat",
@@ -39,7 +38,6 @@ CACHES = {
         "LOCATION": "chat_memory_cache",
     }
 }
-
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -158,3 +156,5 @@ LOGGING = {
         },
     },
 }
+
+PORT = os.getenv('PORT', '8000')  # Default to 8000 if PORT is not set
