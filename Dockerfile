@@ -17,11 +17,11 @@ WORKDIR /app
 # Copy environment.yml into the container
 COPY environment.yml /app/
 
-# Create the Conda environment (named "portfolioenv")
+# Create the Conda environment
 RUN conda env create -f /app/environment.yml
 
-# Pre-download SentenceTransformer model
-RUN conda run -n portfolioenv python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('paraphrase-MiniLM-L6-v2')"
+# Activate Conda env and download SpaCy model (not sentence-transformers!)
+RUN conda run -n portfolioenv python -m spacy download en_core_web_md
 
 # Set environment variables
 ENV PATH /opt/conda/envs/portfolioenv/bin:$PATH
@@ -46,5 +46,5 @@ EXPOSE 8000
 # Use Tini as init system
 ENTRYPOINT ["/usr/bin/tini", "--"]
 
-# Run entrypoint script to start Gunicorn with fewer workers
+# Start the app
 CMD ["/app/entrypoint.sh", "--workers=1", "--threads=2"]

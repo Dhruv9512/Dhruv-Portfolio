@@ -1,5 +1,6 @@
 import os
 import pickle
+import requests
 from dotenv import load_dotenv
 from django.core.cache import cache
 
@@ -8,25 +9,42 @@ from langchain.schema import HumanMessage, AIMessage, SystemMessage, Document
 from langchain.memory import ConversationSummaryMemory
 from langchain.chains.question_answering import load_qa_chain
 from qdrant_client import QdrantClient
-from sentence_transformers import SentenceTransformer
 
 # Load environment variables
 load_dotenv()
 
-# Initialize Gemini model
+
+# ------------------------ Embedding with HuggingFace ------------------------
+def embed_query(text):
+    HF_API_TOKEN = os.environ.get("HF_API_KEY")
+    headers = {"Authorization": f"Bearer {HF_API_TOKEN}"}
+    try:
+        response = requests.post(
+            "https://api-inference.huggingface.co/pipeline/feature-extraction/sentence-transformers/all-mpnet-base-v2",
+            headers=headers,
+            json={"inputs": text}
+        )
+        response.raise_for_status()
+        embedding = response.json()
+        if isinstance(embedding[0], list):  # average token embeddings
+            embedding = [sum(col) / len(col) for col in zip(*embedding)]
+        return embedding
+    except Exception as e:
+        print(f"❌ Embedding Error: {e}")
+        return None
+
+
+# ------------------------ LangChain Model Setup ------------------------
 model = ChatGoogleGenerativeAI(
     model="gemini-1.5-pro",
     temperature=0.7,
     google_api_key=os.environ.get("GOOGLE_API_KEY"),
 )
 
-# Initialize QA Chain
 qa_chain = load_qa_chain(llm=model, chain_type="stuff")
 
-# Initialize SentenceTransformer model
-sentence_model = SentenceTransformer("paraphrase-MiniLM-L6-v2")
 
-# Function: Get similar answers using Qdrant and sentence-transformers
+# ------------------------ Search from Vector DB ------------------------
 def get_similar_ans(query, k=5):
     collection_name = "my_collection"
     client = QdrantClient(
@@ -34,8 +52,10 @@ def get_similar_ans(query, k=5):
         api_key=os.environ.get("QDRANT_API_KEY")
     )
 
-    # Generate embedding using SentenceTransformer
-    query_embedding = sentence_model.encode(query).tolist()
+    # Generate embedding using Hugging Face
+    query_embedding = embed_query(query)
+    if not query_embedding:
+        return []
 
     search_results = client.search(
         collection_name=collection_name,
@@ -44,7 +64,8 @@ def get_similar_ans(query, k=5):
     )
     return search_results
 
-# Function: Summarize the conversation
+
+# ------------------------ Summarize Memory ------------------------
 def summarize_conversation(messages):
     conversation_text = "\n".join([f"{msg.type}: {msg.content}" for msg in messages])
     prompt = (
@@ -55,7 +76,8 @@ def summarize_conversation(messages):
     response = model.invoke(prompt)
     return response.content if response else "No summary available."
 
-# Function: Retrieve memory
+
+# ------------------------ Get or Create Memory ------------------------
 def get_memory():
     memory = ConversationSummaryMemory(
         llm=model,
@@ -69,7 +91,7 @@ def get_memory():
         except Exception as e:
             print("Error loading cached messages:", e)
 
-    # Ensure system prompt is present
+    # Add system prompt if not already present
     if not memory.chat_memory.messages or not any(isinstance(msg, SystemMessage) for msg in memory.chat_memory.messages):
         system_message = SystemMessage(
             content=(
@@ -83,7 +105,8 @@ def get_memory():
 
     return memory
 
-# Function: Save memory (after summarizing)
+
+# ------------------------ Save Memory After Summary ------------------------
 def save_memory(memory):
     try:
         summary = summarize_conversation(memory.chat_memory.messages)
@@ -92,47 +115,47 @@ def save_memory(memory):
     except Exception as e:
         print("Error saving memory:", e)
 
-# Main chatbot function
+
+# ------------------------ Main Chat Function ------------------------
 def chat_bot(user_input):
     memory = get_memory()
 
-    # Step 1: Count messages to decide when to summarize
+    # Step 1: Count messages
     message_count = cache.get("message_count", 0)
     message_count += 1
     cache.set("message_count", message_count)
 
-    # Step 2: Add user's message to memory
+    # Step 2: Add user message
     if not memory.chat_memory.messages or memory.chat_memory.messages[-1].content != user_input:
         memory.chat_memory.add_message(HumanMessage(content=user_input))
 
     try:
-        # Step 3: Vector DB search (returns top relevant docs)
+        # Step 3: Search similar documents
         query_results = get_similar_ans(user_input)
         query_docs = [Document(page_content=str(hit.payload)) for hit in query_results]
 
-        # Step 4: Prepare compact chat context from last 5 messages
+        # Step 4: Chat context
         chat_context = "\n".join(
             [f"{msg.type}: {msg.content}" for msg in memory.chat_memory.messages[-5:]]
         )
 
-        # Step 5: Run QA Chain
+        # Step 5: QA Chain
         response = qa_chain.run({
             "input_documents": query_docs,
             "question": chat_context
         })
 
-        # Step 6: Add Gemini’s response to memory
-        memory.chat_memory.add_message(AIMessage(content=str(response)))
+        # Step 6: Add AI response to memory
+        memory.chat_memory.add_message(AIMessage(content=str(response)))  # ← fix for JSON serialization
 
-        # Step 7: Summarize and reset if 5 messages done
+        # Step 7: Summarize if enough messages
         if message_count >= 5:
-            save_memory(memory)  # Summarize and store
-            cache.set("message_count", 0)  # Reset counter
+            save_memory(memory)
+            cache.set("message_count", 0)
         else:
-            # Just store messages (no summary yet)
             cache.set("chat_memory_messages", pickle.dumps(memory.chat_memory.messages), timeout=None)
 
-        return response
+        return str(response)  # ← fix for frontend or API
 
     except Exception as e:
         print("Error in chat_bot:", e)
