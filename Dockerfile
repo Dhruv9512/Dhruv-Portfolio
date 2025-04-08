@@ -20,9 +20,6 @@ COPY environment.yml /app/
 # Create the Conda environment
 RUN conda env create -f /app/environment.yml
 
-# Activate Conda env and download SpaCy model (not sentence-transformers!)
-RUN conda run -n portfolioenv python -m spacy download en_core_web_md
-
 # Set environment variables
 ENV PATH /opt/conda/envs/portfolioenv/bin:$PATH
 ENV DEBIAN_FRONTEND=noninteractive
