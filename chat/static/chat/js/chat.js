@@ -13,7 +13,7 @@ async function fetchdata(messageText) {
     try {
         console.log('Sending message:', messageText); // Log the message to send
         
-        const response = await fetch('api/', {
+        const response = await fetch('https://dhruv-portfolio-chatbot.onrender.com/api/', {
             method: 'POST', // Use POST method to send data
             headers: {
                 'Content-Type': 'application/json',

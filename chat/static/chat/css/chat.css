@@ -1,5 +1,6 @@
 body {
     overflow: hidden; /* Prevent scrolling on the body */
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .chatbot-header {

@@ -1,21 +1,31 @@
 @import url("https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap");
 @import url('https://fonts.googleapis.com/css2?family=Cabin+Sketch:wght@700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
 
-/* Ensure the html and body have full height */
+/* General Styling */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+/* Base styles for the entire website */
 html {
     height: 100%;
     margin: 0;
-    font-family: 'Poppins', sans-serif; /* Updated font */
+    font-size: 16px;
+    font-family: 'Montserrat', sans-serif; /* Modern font */
+    scroll-behavior: smooth;
 }
 
 /* Main section styling */
 body {
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh; /* Ensure full height */
-    margin: 0;
-    background-color: rgba(245, 245, 245, 0.9);
+    font-family: 'Roboto', sans-serif; /* Modern font */
+    background-color: #f4f4f4; /* Light background */
+    color: #333; /* Dark text */
+    margin: 0; /* Reset margin */
+    padding: 0; /* Reset padding */
 }
 body::-webkit-scrollbar {
     display: none; /* Hide scrollbar */
