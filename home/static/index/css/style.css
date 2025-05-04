@@ -1,56 +1,87 @@
 @import url("https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap");
 @import url('https://fonts.googleapis.com/css2?family=Cabin+Sketch:wght@700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
 
-/* Ensure the html and body have full height */
+/* General Styling */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+/* Base styles for the entire website */
 html {
     height: 100%;
     margin: 0;
-    font-family: 'Poppins', sans-serif; /* Updated font */
+    font-size: 16px;
+    font-family: 'Montserrat', sans-serif; /* Modern font */
+    scroll-behavior: smooth;
 }
 
 /* Main section styling */
 body {
+    font-family: 'Poppins', sans-serif;
     display: flex;
     flex-direction: column;
-    min-height: 100vh; /* Ensure full height */
+    min-height: 100vh;
     margin: 0;
     background-color: rgba(245, 245, 245, 0.9);
+    color: #333; /* Dark gray text */
+    line-height: 1.6;
+    letter-spacing: 0.5px;
+    transition: background-color 0.3s ease;
+    padding-bottom: 2rem; /* Added padding to the bottom */
 }
+
 body::-webkit-scrollbar {
-    display: none; /* Hide scrollbar */
+    display: none;
+}
+
+/* Improved link styling */
+ul {
+    list-style: none;
+}
+
+a {
+    text-decoration: none;
+    color: #333;
+    transition: color 0.3s ease;
 }
 
 /* Ensure header and footer behave well */
 header {
+    position: sticky;
+    top: 0;
     z-index: 10;
-    backdrop-filter: blur(5px); /* Apply blur to the background */
     padding: 0.25rem; /* Add padding for better spacing */
-    box-shadow: 0 0.125rem 0.3125rem rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
 }
 
 footer {
     margin-top: auto;
-    padding: 1.25rem 0; 
+    padding: 1.25rem 0;
 }
 
 /* Logo styling */
 #Dhruv_Logo {
     text-align: center;
-    font-family: 'Cabin Sketch', cursive; /* Custom font for a more unique look */
+    padding-left: 0.25rem;
+    font-family: 'Cabin Sketch', cursive;
 }
 
 .portfolio-logo {
-    display: flex;
+    display: flex; /* Use flexbox */
     justify-content: center;
     align-items: center; /* Center vertically */
-    font-weight: bold;
+    font-weight: 700;
     color: #0ACEFE; /* Blue color for a modern feel */
     font-size: 2rem; /* Increased font size for better visibility */
 }
 
 .portfolio {
-    color: #2699FB; /* Lighter gradient blue */
+    font-weight: 600;
+    color: #2699FB; /* Gradient color */
 }
 
 /* Logo in mobile */
@@ -69,39 +100,41 @@ footer {
     background-color: #F5F5F5; /* Changed to light gray color */
     height: 100% !important;
     width: 100vw !important;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
 }
 
 .offcanvas-body {
-    background-color: #F5F5F5; /* Changed to light gray */
+    background-color: #F5F5F5;
     overflow-y: visible !important;
-    height: 100vh !important; /* Full screen height */
-    min-height: 100vh !important; /* Ensure full screen height even if content is less */
     width: 100vw !important;
+    padding: 1.5rem; /* Added padding to the sides */
+    display: flex; /* Use flexbox */
+    flex-direction: column; /* Stack items vertically */
 }
 
 .offcanvas-body nav {
-    flex-grow: 1; /* This allows the nav links to take up the remaining space */
-    overflow-y: visible; /* Allow scrolling if there are too many items */
+    flex-grow: 1;
+    overflow-y: auto;
 }
 
 .offcanvas-body nav a {
-    width: 35%; /* Full width for better alignment */
+    display: block; /* Full width for better alignment */
     text-decoration: none;
     color: #000000; /* Black text */
     font-family: 'Poppins', sans-serif;
-    font-size: 1.0625rem; /* Increased by 1px */
-    padding: 0.625rem 0.9375rem; /* Adjusted padding for better spacing */
-    border-radius: 0.3125rem;
-    margin-top: 0.625rem; /* Consistent margin */
+    font-size: 1.125rem; /* Increased by 1px */
+    padding: 0.75rem 1rem; /* Adjusted padding for better spacing */
+    border-radius: 0.375rem;
+    margin-top: 0.75rem; /* Consistent margin */
     transition: color 0.3s ease, background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-/* Mobile Navbar link hover effect */
+/* Mobile Navbar link styles on hover */
 .offcanvas-body nav a:hover {
-    color: white !important;
-    background: linear-gradient(to right, #0ACEFE, #2699FB); /* Gradient background */
-    transform: scale(1.05); /* Smooth scaling effect */
-    box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.2);
+    color: white !important; /* White text on hover */
+    background: linear-gradient(to right, #0ACEFE, #2699FB);
+    transform: scale(1.05);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 /* Custom icon styling */
@@ -112,8 +145,8 @@ footer {
     text-rendering: auto;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    color: #0ACEFE; /* Gradient color */
-    transition: transform 0.3s ease;
+    color: #0ACEFE; /* Consistent blue color */
+    transition: transform 0.2s ease-in-out; /* Slightly faster transition */
     width: 1.5em; /* Increased size for better visibility */
     height: 1.5em; /* Increased size for better visibility */
     text-align: center;
@@ -132,50 +165,58 @@ footer {
 }
 
 .custom-icon:hover {
-    transform: scale(1.1);
+    transform: scale(1.1); /* Slightly larger on hover */
 }
 
 /* Normal navbar */
-.navbar-nav a {
-    font-size: 1.0625rem; /* Increased by 1px */
+.navbar-nav .nav-link {
+    font-size: 1.125rem; /* Increased by 1px */
     color: #000000; /* Black text */
-    font-family: 'Poppins', sans-serif;
+    font-weight: 500;
     padding: 0.625rem 0.9375rem; /* Adjusted padding for better spacing */
     border-radius: 0.25rem;
     transition: color 0.3s ease, background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .navbar-nav a:hover {
-    color: white !important;
-    background: linear-gradient(to right, #0ACEFE, #2699FB); /* Gradient background */
-    transform: scale(1.05); /* Smooth scaling effect */
-    box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.2);
+    color: white !important; /* White text on hover */
+    background: linear-gradient(to right, #0ACEFE, #2699FB);
+    transform: scale(1.05);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 /* Navbar Icon */
 #nav_icon {
     color: black !important;
     font-size: 1.3125rem; /* Increased by 1px */
+    transition: color 0.3s ease, transform 0.3s ease;
 }
 
-/* Change link color to white when scrolled */
-.navbar.scrolled .nav-link {
-    color: #F5F5F5 !important; /* Change link color to white */
+#nav_icon:hover {
+    color: #0ACEFE !important; /* Changed to blue */
+    transform: scale(1.1);
 }
 
 /* Button Styling */
 .btn {
-    background: linear-gradient(to right, #0ACEFE, #2699FB); /* Gradient background */
-    color: #000000; /* Black text for contrast */
+    background: linear-gradient(to right, #0ACEFE, #2699FB);
+    color: white;
+    border: none;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 500;
+    text-transform: capitalize;
+    padding: 0.625rem 1.25rem;
+    border-radius: 0.375rem;
+    box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.2);
+    transition: background 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
 }
 
 .btn:hover {
     background: linear-gradient(to right, #2699FB, #0ACEFE); /* Gradient hover */
+    transform: translateY(-0.125rem);
 }
 
-/* Footer Styling */
-.copyright p {
-    color: #000000; /* Black text */
+.copyright {
     text-align: center;
     margin: 0;
 }
@@ -183,6 +224,7 @@ footer {
 .social_media {
     display: flex;
     justify-content: center;
+    align-items: center;
     gap: 0.9375rem; /* 15px */
     margin-top: 1.25rem; /* 20px */
 }
@@ -191,67 +233,88 @@ footer {
     border-radius: 50%;
     width: 1.875rem; /* 30px */
     height: 1.875rem; /* 30px */
-    background-color: #F5F5F5; /* Changed to light gray */
-    box-shadow: 0 0.125rem 0.3125rem rgba(0, 0, 0, 0.2);
-    transition: background-color 0.3s ease, transform 0.3s ease;
+    background-color: rgba(10, 206, 254, 0.1); /* Light blue background */
+    box-shadow: 0 0.125rem 0.3125rem rgba(0, 0, 0, 0.1);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: background-color 0.2s ease-in-out, transform 0.2s ease-in-out;
     margin-bottom: 2.5rem; /* 40px */
 }
 
 .social_media div:hover {
-    background-color: rgba(10, 206, 254, 0.2);
-    transform: scale(1.05);
+    background-color: rgba(10, 206, 254, 0.2); /* Light blue hover */
+    transform: scale(1.08); /* Slightly larger on hover */
 }
 
 .social_media i {
-    color: #0ACEFE; /* Gradient color */
-    font-size: 1.0625rem; /* Increased by 1px */
-    transition: transform 0.3s ease;
+    color: #0ACEFE;
+    font-size: 1.125rem;
+    transition: transform 0.2s ease-in-out;
 }
 
-.social_media div:hover i {
-    transform: scale(1.1);
-}
+
 
 .info p {
-    color: #000000; /* Black text */
+    color: #333; /* Dark gray text */
 }
 
 .info div {
     border-radius: 50%;
     width: 1.875rem; /* 30px */
     height: 1.875rem; /* 30px */
-    background-color: #F5F5F5;
-    box-shadow: 0 0.125rem 0.3125rem rgba(0, 0, 0, 0.2);
-    transition: background-color 0.3s ease, transform 0.3s ease;
-    margin-right: 0.625rem; /* 10px */
+    background-color: rgba(10, 206, 254, 0.1); /* Light blue background */
+    box-shadow: 0 0.125rem 0.3125rem rgba(0, 0, 0, 0.1);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: background-color 0.2s ease-in-out, transform 0.2s ease-in-out;
+    margin-right: 0.75rem;
 }
 
 .info div i {
-    color: #0ACEFE; /* Gradient color */
-    font-size: 1rem; /* Increased by 1px */
-    transition: transform 0.3s ease;
+    color: #0ACEFE;
+    font-size: 1.125rem;
 }
 
-.info div:hover {
+.info div:hover { /* Light blue hover */
     background-color: rgba(10, 206, 254, 0.2);
     transform: scale(1.05);
 }
 
-.info div:hover i {
-    transform: scale(1.1);
-}
-
 .about p {
-    color: #000000; /* Black text */
+    color: #333; /* Dark gray text */
 }
 
 .about h4 {
-    color: #2699FB; /* Gradient color */
+    color: #2699FB;
     font-family: 'Poppins', sans-serif;
+    font-weight: 600;
+}
+.about h4, .about p{
+    padding: 0.25rem;
 }
 
-/* --------------------------------- Media Queries for Responsiveness -------------------------------- */
+.navbar {
+    padding: 1rem 2rem; /* Improved padding */
+}
 
+.navbar-brand img {
+    max-height: 50px;
+}
+.navbar-nav {
+    gap: 1rem; /* Spacing between navbar items */
+}
+
+
+
+/* Footer Styling */
+.copyright p {
+    color: #333; /* Dark gray text */
+    text-align: center;
+    margin: 0;
+}
+/* --------------------------------- Media Queries for Responsiveness -------------------------------- */
 /* Small Devices (Mobile - 450px or less) */
 @media (max-width: 450px) {
     .portfolio-logo {
@@ -263,14 +326,14 @@ footer {
     }
 
     .mobile_navbar a {
-        font-size: 1.1875rem; /* Increased by 1px */
+        font-size: 1.125rem;
     }
 
     #nav_icon {
-        font-size: 1.1875rem; /* Increased by 1px */
+        font-size: 1.25rem;
     }
 
-    .social_media i {
+        .social_media i {
         font-size: 1.1875rem; /* Increased by 1px */
     }
 
@@ -280,11 +343,6 @@ footer {
     }
 
     .info div {
-        width: 1.625rem; /* Increased by 1px */
-        height: 1.625rem; /* Increased by 1px */
-    }
-
-    /* Chat icon responsive styles */
     #open-chat {
         width: 2.5rem; /* Smaller size for mobile */
         height: 2.5rem; /* Smaller size for mobile */
@@ -301,14 +359,14 @@ footer {
     }
     .navbar-nav a {
         font-size: 1rem; /* Increased by 1px */
+        padding: 0.5rem 0.75rem;
     }
 
     .mobile_navbar a {
-        font-size: 1.25rem; /* Increased by 1px */
+        font-size: 1.125rem; /* Increased by 1px */
     }
 
     #nav_icon {
-        font-size: 1.25rem; /* Increased by 1px */
     }
 
     .social_media i {
@@ -321,11 +379,6 @@ footer {
     }
 
     .info div {
-        width: 1.8125rem; /* 29px */
-        height: 1.8125rem; /* 29px */
-    }
-
-    /* Chat icon responsive styles */
     #open-chat {
         width: 2.75rem; /* Slightly smaller size for tablets */
         height: 2.75rem; /* Slightly smaller size for tablets */
@@ -337,42 +390,34 @@ footer {
 /* Large Devices (Desktops - 769px and up) */
 @media (min-width: 769px) {
     .portfolio-logo {
-        font-size: 2rem; /* Increased by 0.5em */
-        margin-left: 4em;
+        font-size: 2.125rem; /* Increased by 0.5em */
     }
 
-    .navbar-nav a {
-        font-size: 1.0625rem; /* Increased by 1px */
+        .navbar-nav a {
+        font-size: 1.125rem;
+        padding: 0.625rem 1.25rem;
+
     }
 
     .mobile_navbar a {
-        font-size: 1.3125rem; /* Increased by 1px */
+        font-size: 1.25rem;
     }
 
     #nav_icon {
-        font-size: 1.3125rem; /* Increased by 1px */
     }
 
     .social_media i {
-        font-size: 1.3125rem; /* Increased by 1px */
+        font-size: 1.25rem;
     }
 
     .social_media div {
-        width: 2.25rem; /* Increased by 1px */
-        height: 2.25rem; /* Increased by 1px */
+        width: 2.125rem;
+        height: 2.125rem;
     }
 
     .info div {
-        width: 1.9375rem; /* Increased by 1px */
-        height: 1.9375rem; /* Increased by 1px */
-    }
-
-    /* Chat icon responsive styles */
-    #open-chat {
-        width: 3rem; /* Default size for desktops */
-        height: 3rem; /* Default size for desktops */
-        bottom: calc(1.25rem + 1vh); /* Adjust position for desktops */
-        right: calc(1.25rem + 1vw); /* Adjust position for desktops */
+        width: 2rem;
+        height: 2rem;
     }
 }
 
@@ -391,4 +436,4 @@ footer {
 /* Optional: Add hover effect for the chat icon */
 #open-chat:hover {
     transform: scale(1.05); /* Slightly enlarge on hover */
-}
+}  
