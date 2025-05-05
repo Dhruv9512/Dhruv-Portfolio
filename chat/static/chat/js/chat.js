@@ -11,34 +11,37 @@ window.onload = function() {
 // Function to send a message
 async function fetchdata(messageText) {
     try {
-        console.log('Sending message:', messageText); // Log the message to send
-        
+        console.log('Sending message:', messageText);
+
         const response = await fetch('https://dhruv-portfolio-chatbot.onrender.com/api/', {
-            method: 'POST', // Use POST method to send data
+            method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ message: messageText }) // Send user message
+            body: JSON.stringify({ message: messageText })
         });
 
         if (!response.ok) {
-            throw new Error('Network response was not ok');
+            throw new Error(`Network response was not ok. Status: ${response.status}`);
         }
 
-        const data = await response.json(); // Wait for the JSON data to be parsed
-        console.log(data.response); // Handle the data returned from the API
+        const data = await response.json();
+        console.log('API response:', data);
 
-        // Assuming the bot's response is in data.response
-        addMessage(data.response); // Add bot response to chat
+        if (data.response) {
+            addMessage('bot', data.response); 
+        } else {
+            addMessage('bot', 'Bot did not return a response.');
+        }
     } catch (error) {
         console.error('There was a problem with the fetch operation:', error);
-        addMessage('bot', 'Sorry, there was an error.'); // Add error message
+        addMessage('bot', 'Sorry, there was an error.'); // Show error to user
     } finally {
-        hideLoading(); // Hide loading indicator
-        // Re-enable the input field
-        document.getElementById('user-input').disabled = false; 
+        hideLoading(); // Optional loading animation
+        document.getElementById('user-input').disabled = false;
     }
 }
+
 
 // Function to send a message
 function sendMessage() {
