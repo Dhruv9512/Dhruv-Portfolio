@@ -89,20 +89,13 @@ logger.debug(f"PORT: {config('POSTGRES_PORT', default='5432')}")
 
 # Database configuration using environment variables
 DATABASES = {
-    "default": dj_database_url.config(
-        default=config("DATABASE_URL"),
-        conn_max_age=600,
+    "default": dj_database_url.parse(
+        config("DATABASE_URL"),
+        conn_max_age=60,
         ssl_require=True
     )
 }
 
-# Add OPTIONS to resolve the SNI inconsistency
-DATABASES["default"]["OPTIONS"] = {
-    "application_name": "ep-sparkling-glitter-a4qz9qz2"
-}
-
-# Add connection pooling to reduce memory usage
-DATABASES["default"]["CONN_MAX_AGE"] = 60  # Keep connections open for 60 seconds
 
 BLOB_READ_WRITE_TOKEN = os.getenv('BLOB_READ_WRITE_TOKEN')
 # Media files (added to serve user-uploaded content like images)
