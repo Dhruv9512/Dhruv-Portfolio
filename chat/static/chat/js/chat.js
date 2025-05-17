@@ -26,21 +26,30 @@ async function fetchdata(messageText) {
         }
 
         const data = await response.json();
-        console.log('API response:', data);
+        console.log('Raw API response:', JSON.stringify(data)); // Helpful for debugging
 
-        if (data.response) {
-            addMessage('bot', data.response); 
+        if (data.response && typeof data.response === 'string') {
+            const lowerResp = data.response.toLowerCase();
+
+            if (lowerResp.includes("internal server error") && lowerResp.includes("429")) {
+                // Specific Gemini quota exceeded error
+                addMessage('bot', '⚠️ You have exceeded the Gemini API usage limits. Please try again later.\n\nMore info: https://ai.google.dev/gemini-api/docs/rate-limits');
+            } else {
+                // Show the actual message from the bot
+                addMessage('bot', data.response);
+            }
         } else {
-            addMessage('bot', 'Bot did not return a response.');
+            addMessage('bot', 'Bot did not return a valid response.');
         }
     } catch (error) {
         console.error('There was a problem with the fetch operation:', error);
-        addMessage('bot', 'Sorry, there was an error.'); // Show error to user
+        addMessage('bot', '❌ Sorry, there was an error. Please try again later.');
     } finally {
-        hideLoading(); // Optional loading animation
-        document.getElementById('user-input').disabled = false;
+        hideLoading(); // Hide loader animation if present
+        document.getElementById('user-input').disabled = false; // Re-enable input
     }
 }
+
 
 
 // Function to send a message
