@@ -1,4 +1,4 @@
-// Function to hide the chat icon and footer
+// Hide chat icon and footer on page load
 window.onload = function() {
     const chat = document.getElementById('open-chat');
     const footer = document.querySelector('.main_footer');
@@ -8,119 +8,105 @@ window.onload = function() {
     }
 };
 
-// Function to send a message
+// Send message to backend API and handle response
 async function fetchdata(messageText) {
     try {
         console.log('Sending message:', messageText);
 
         const response = await fetch('https://dhruv-portfolio-chatbot.onrender.com/api/', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ message: messageText })
         });
 
         if (!response.ok) {
-            throw new Error(`Network response was not ok. Status: ${response.status}`);
+            throw new Error(`Status ${response.status}`);
         }
 
         const data = await response.json();
-        console.log('Raw API response:', JSON.stringify(data));
+        console.log('Raw API response:', data);
 
-        if (typeof data.response === 'string' && data.response.trim() !== '') {
-            const lowerResp = data.response.toLowerCase();
+        const botResponse = data?.response?.trim();
 
-            // Handle Gemini quota error clearly
-            if (
-                lowerResp.includes("internal server error") &&
-                lowerResp.includes("429") &&
-                lowerResp.includes("you exceeded your current quota")
-            ) {
-                addMessage(
-                    'bot',
-                    `🚫 *Gemini API usage limit exceeded.*\n\nYou’ve hit the free-tier limit for this chatbot. Try again later or check usage limits here:\n🔗 https://ai.google.dev/gemini-api/docs/rate-limits`
-                );
+        if (botResponse) {
+            const lowerResp = botResponse.toLowerCase();
+
+            if (lowerResp.includes("429") && lowerResp.includes("quota")) {
+                addMessage('bot', `🚫 *Gemini API quota exceeded.*\nTry again later or check limits: https://ai.google.dev/gemini-api/docs/rate-limits`);
             } else {
-                // Valid chatbot response
-                addMessage('bot', data.response);
+                addMessage('bot', botResponse);
             }
         } else {
-            addMessage('bot', '❗ Bot did not return a valid response.');
+            addMessage('bot', '❗ Bot did not return a valid response. Please try rephrasing your question.');
         }
+
     } catch (error) {
-        console.error('There was a problem with the fetch operation:', error);
-        addMessage('bot', '❌ Sorry, something went wrong. Please try again later.');
+        console.error('Fetch error:', error);
+        addMessage('bot', `❌ *Server Error:* ${error.message || 'Something went wrong. Please try again later.'}`);
     } finally {
         hideLoading();
         document.getElementById('user-input').disabled = false;
     }
 }
 
-
-
-// Function to send a message
+// Send message triggered by user action
 function sendMessage() {
     console.log("sendMessage function called");
     const userInput = document.getElementById('user-input');
-    const messageText = userInput.value.trim(); // Correct variable name
+    const messageText = userInput.value.trim();
     console.log('Sending message:', messageText);
-    
+
     if (messageText) {
-        // Add user message to chat immediately
-        adduserMessage(messageText); 
-        
-        // Clear input field
-        userInput.value = ''; 
-        
-        // Show loading indicator
-        showLoading(); 
-        
-        // Disable the input field to prevent multiple sends
-        userInput.disabled = true; 
-        
-        // Call fetchdata to send the message to the API
+        adduserMessage(messageText); // Show user message
+        userInput.value = '';        // Clear input field
+        showLoading();               // Show loader
+        userInput.disabled = true;   // Disable input to prevent spam
+
         setTimeout(() => {
-            fetchdata(messageText); 
+            fetchdata(messageText);
         }, 1000);
     }
 }
 
-// Function to handle key press for sending message
+// Add user message to chat UI
 function adduserMessage(text) {
     const messagesContainer = document.getElementById('chatbot-messages');
     const messageDiv = document.createElement('div');
-    messageDiv.className = `message user-message`;
+    messageDiv.className = 'message user-message';
     messageDiv.textContent = text;
     messagesContainer.appendChild(messageDiv);
-    messagesContainer.scrollTop = messagesContainer.scrollHeight; 
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
 }
 
-// Function to add a message to the boat chat
-function addMessage(text) {
+// Add bot message to chat UI
+function addMessage(sender, text) {
     const main = document.createElement('div');
     main.className = 'd-flex wh-100 row';
 
     const messagesContainer = document.getElementById('chatbot-messages');
     messagesContainer.appendChild(main);
 
-    const img = document.createElement('img');
-    img.className = 'col-2 myboat-icon';
-    img.src = '/static/index/img/cheatboaticon.gif';
-    img.alt = 'MyBoat icon';
-    main.appendChild(img);
+    if (sender === 'bot') {
+        const img = document.createElement('img');
+        img.className = 'col-2 myboat-icon';
+        img.src = '/static/index/img/cheatboaticon.gif';
+        img.alt = 'MyBoat icon';
+        main.appendChild(img);
+    }
 
     const messageDiv = document.createElement('div');
-    messageDiv.className = `message bot-message`;
+    messageDiv.className = `message ${sender}-message`;
     messageDiv.textContent = text;
     main.appendChild(messageDiv);
-    messagesContainer.scrollTop = messagesContainer.scrollHeight; 
+
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
 }
 
-// Function that create a loader
+// Create loader element for loading animation
 function createLoader() {
     const main = document.createElement('div');
     main.className = 'd-flex wh-100 row main_div align-items-center';
+
     const messagesContainer = document.getElementById('chatbot-messages');
     messagesContainer.appendChild(main);
 
@@ -133,27 +119,29 @@ function createLoader() {
     const messageDiv = document.createElement('div');
     messageDiv.id = 'loading';
     main.appendChild(messageDiv);
-    messagesContainer.scrollTop = messagesContainer.scrollHeight; 
+
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
 }
-// Function to show loading indicator
+
+// Show loading indicator
 function showLoading() {
     createLoader();
 }
 
-// Function to hide loading indicator
+// Hide loading indicator
 function hideLoading() {
     const loadingDiv = document.querySelector('.main_div');
-    loadingDiv.remove();
+    if (loadingDiv) loadingDiv.remove();
 }
 
-// Function to handle key press for sending message
+// Handle "Enter" key press for sending message
 function handleKeyPress(event) {
     if (event.key === 'Enter') {
-        sendMessage(); // Send message on Enter key press
+        sendMessage();
     }
 }
 
-// Function to toggle chat visibility
+// Toggle chatbot visibility on screen
 function toggleChat() {
     const chatbotContainer = document.querySelector('.chatbot-container');
     chatbotContainer.style.display = chatbotContainer.style.display === 'none' ? 'flex' : 'none';
