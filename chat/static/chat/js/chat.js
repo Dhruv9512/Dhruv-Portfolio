@@ -26,27 +26,34 @@ async function fetchdata(messageText) {
         }
 
         const data = await response.json();
-        console.log('Raw API response:', JSON.stringify(data)); // Helpful for debugging
+        console.log('Raw API response:', JSON.stringify(data));
 
-        if (data.response && typeof data.response === 'string') {
+        if (typeof data.response === 'string' && data.response.trim() !== '') {
             const lowerResp = data.response.toLowerCase();
 
-            if (lowerResp.includes("internal server error") && lowerResp.includes("429")) {
-                // Specific Gemini quota exceeded error
-                addMessage('bot', '⚠️ You have exceeded the Gemini API usage limits. Please try again later.\n\nMore info: https://ai.google.dev/gemini-api/docs/rate-limits');
+            // Handle Gemini quota error clearly
+            if (
+                lowerResp.includes("internal server error") &&
+                lowerResp.includes("429") &&
+                lowerResp.includes("you exceeded your current quota")
+            ) {
+                addMessage(
+                    'bot',
+                    `🚫 *Gemini API usage limit exceeded.*\n\nYou’ve hit the free-tier limit for this chatbot. Try again later or check usage limits here:\n🔗 https://ai.google.dev/gemini-api/docs/rate-limits`
+                );
             } else {
-                // Show the actual message from the bot
+                // Valid chatbot response
                 addMessage('bot', data.response);
             }
         } else {
-            addMessage('bot', 'Bot did not return a valid response.');
+            addMessage('bot', '❗ Bot did not return a valid response.');
         }
     } catch (error) {
         console.error('There was a problem with the fetch operation:', error);
-        addMessage('bot', '❌ Sorry, there was an error. Please try again later.');
+        addMessage('bot', '❌ Sorry, something went wrong. Please try again later.');
     } finally {
-        hideLoading(); // Hide loader animation if present
-        document.getElementById('user-input').disabled = false; // Re-enable input
+        hideLoading();
+        document.getElementById('user-input').disabled = false;
     }
 }
 
