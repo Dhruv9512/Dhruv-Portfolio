@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from .models import Education,Skill,certification_link,Achievements,Work_Experience_and_Internships
+from .models import Education,Skill,certification_link,Work_Experience_and_Internships
 # Create your views here.
 def about(request):
     # ==============================Education tab===============================
@@ -17,8 +17,7 @@ def about(request):
     # ========================Certifications & Achievements Tab========================
     certification_link_All_Data = certification_link.objects.all()
     Real_certification_link_Data = []
-    Achievements_All_Data = Achievements.objects.all()
-    Real_Achievements_Data = []
+    
 
     # Certification list making
     name.clear()
@@ -27,12 +26,7 @@ def about(request):
             Real_certification_link_Data.append(certification_link.objects.filter(name = v.name).all())
             name.add(v.name)
     
-    # Achievements list making
-    name.clear()
-    for v in Achievements_All_Data:
-        if v.name not in name:
-            Real_Achievements_Data.append(Achievements.objects.filter(name = v.name).all())
-            name.add(v.name)
+  
     
     #===================================Work Experience / Internships Tab===================================
     Work_Experience_and_Internships_All_Data = Work_Experience_and_Internships.objects.all()
@@ -48,7 +42,6 @@ def about(request):
         "Skill":Real_Skill_Data,
         "Certifications_and_Achievements":{
             "certification_link":Real_certification_link_Data,
-            "Achievements":Real_Achievements_Data,
         },
         "Work_Experience_and_Internships":Real_Work_Experience_and_Internships_Data
     }

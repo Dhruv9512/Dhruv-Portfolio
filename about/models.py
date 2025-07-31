@@ -14,7 +14,6 @@ class Education(models.Model):
 class Skill(models.Model):
     Name = models.CharField(max_length=150)
     skill = models.CharField(max_length=255)
-    Proficiency = models.CharField(max_length=100) 
 
 
 # <!-- Certifications & Achievements Tab -->
@@ -24,9 +23,6 @@ class certification_link(models.Model):
     content = models.CharField(max_length=300)
     link = models.CharField(max_length=500)
 
-class Achievements(models.Model):
-    name = models.CharField(max_length=150)
-    content = models.CharField()
 
 
 #  <!-- Work Experience / Internships Tab -->

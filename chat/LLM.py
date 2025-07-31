@@ -1,229 +1,204 @@
-# import os
-# import pickle
-# import requests
-# import time
-# from dotenv import load_dotenv
-# from django.core.cache import cache
+import os
+from dotenv import load_dotenv
+from langgraph.graph import StateGraph,START,END
+from langgraph.graph.message import AnyMessage,add_messages
+from typing import Annotated
+from langgraph.prebuilt import ToolNode ,tools_condition
+from typing_extensions import TypedDict
+from langchain_core.prompts import ChatPromptTemplate
+from langgraph.checkpoint.memory import MemorySaver
+import nest_asyncio
+nest_asyncio.apply()
 
-# from langchain_google_genai import ChatGoogleGenerativeAI
-# from langchain.schema import HumanMessage, AIMessage, SystemMessage, Document
-# from langchain.memory import ConversationSummaryMemory
-# from langchain.chains.question_answering import load_qa_chain
-# from qdrant_client import QdrantClient
+load_dotenv()
 
-# # Load environment variables
-# load_dotenv()
-
-# # Initialize Gemini model (used only for QA, not summarization)
-# model = ChatGoogleGenerativeAI(
-#     model="gemini-1.5-pro",
-#     temperature=0.7,
-#     google_api_key=os.environ.get("GOOGLE_API_KEY"),
-# )
-
-# # Initialize QA Chain
-# qa_chain = load_qa_chain(llm=model, chain_type="stuff")
-
-# # Function: Generate vector for user input using Hugging Face API
-# def embed_query(text):
-#     HF_API_KEY = os.environ.get("HF_API_KEY")
-#     headers = {"Authorization": f"Bearer {HF_API_KEY}"}
-#     url = "https://api-inference.huggingface.co/pipeline/feature-extraction/sentence-transformers/all-mpnet-base-v2"
-
-#     for attempt in range(5):  # Retry logic for 503 errors
-#         try:
-#             response = requests.post(url, headers=headers, json={"inputs": text}, timeout=10)
-#             response.raise_for_status()
-#             embedding = response.json()
-#             if isinstance(embedding[0], list):
-#                 embedding = [sum(col) / len(col) for col in zip(*embedding)]
-#             return embedding
-#         except requests.exceptions.RequestException as e:
-#             print(f"[Attempt {attempt+1}] ❌ Embedding Error: {e}")
-#             if response.status_code in [500, 503]:
-#                 time.sleep(2)  # Wait and retry
-#             else:
-#                 break
-#         except Exception as e:
-#             print("❌ Failed to parse embedding:", e)
-#             break
-
-#     # Fallback: Return a zero vector if embedding generation fails
-#     print("❌ Embedding generation failed. Returning a zero vector as fallback.")
-#     return [0.0] * 768
-
-# # Function: Get similar answers using Qdrant
-# def get_similar_ans(query, k=5):
-#     collection_name = "my_collection"
-#     client = QdrantClient(
-#         url=os.environ.get("QDRANT_URL"),
-#         api_key=os.environ.get("QDRANT_API_KEY")
-#     )
-
-#     query_embedding = embed_query(query)
-#     if not query_embedding:
-#         print("Failed to generate query embedding.")
-#         return []
-
-#     try:
-#         search_results = client.search(
-#             collection_name=collection_name,
-#             query_vector=query_embedding,
-#             limit=k
-#         )
-#         return search_results
-#     except Exception as e:
-#         print(f"Error with Qdrant API: {e}")
-#         return []
-
-# # ✅ Function: Summarize the conversation using Hugging Face
-# def summarize_conversation(messages):
-#     HF_API_KEY = os.environ.get("HF_API_KEY")
-#     if not HF_API_KEY:
-#         print("❌ Hugging Face API key is missing.")
-#         return get_fallback_summary(messages, reason="missing API key")
-
-#     headers = {"Authorization": f"Bearer {HF_API_KEY}"}
-
-#     conversation_text = "\n".join([f"{msg.type}: {msg.content}" for msg in messages])
-#     input_text = conversation_text[:1024]  # Optional truncation
-
-#     try:
-#         response = requests.post(
-#             "https://api-inference.huggingface.co/models/facebook/bart-large-cnn",
-#             headers=headers,
-#             json={"inputs": input_text},
-#             timeout=15
-#         )
-#         print("📨 Raw response text:", response.text)  # For debugging
-#         response.raise_for_status()
-#         result = response.json()
-
-#         # ✅ Handle different formats
-#         if isinstance(result, list) and result and "summary_text" in result[0]:
-#             return result[0]["summary_text"]
-#         elif isinstance(result, dict) and "summary_text" in result:
-#             return result["summary_text"]
-#         else:
-#             print("⚠️ Unexpected Hugging Face response format:", result)
-#             return get_fallback_summary(messages, reason="unexpected response")
-
-#     except requests.exceptions.RequestException as e:
-#         print(f"🚨 Request error with Hugging Face API: {e}")
-#         return get_fallback_summary(messages, reason="network/API error")
-
-#     except ValueError as e:
-#         print(f"🚨 JSON parsing error from Hugging Face API: {e}")
-#         return get_fallback_summary(messages, reason="response parsing error")
-
-# # 🔁 Helper Function: Fallback Summary
-# def get_fallback_summary(messages, reason="unknown"):
-#     first_user_msg = next(
-#         (msg.content for msg in messages if isinstance(msg, HumanMessage)),
-#         "No user message available."
-#     )
-#     return f"Summary not available due to {reason}. But your first question was:\n\n➡️ **{first_user_msg}**"
-
-# # Function: Retrieve memory
-# def get_memory():
-#     memory = ConversationSummaryMemory(
-#         llm=model,
-#         return_messages=True
-#     )
-
-#     messages_data = cache.get("chat_memory_messages")
-#     if messages_data:
-#         try:
-#             memory.chat_memory.messages = pickle.loads(messages_data)
-#         except Exception as e:
-#             print("Error loading cached messages:", e)
-
-#     # Ensure system prompt is always present
-#     system_message = SystemMessage(
-#         content=(
-#             "You are an intelligent assistant chatbot named Mitsuha.\n"
-#             "If asked, 'What is your name?', reply exactly: 'I am Dhruv Sharma, an assistant.'\n"
-#             "You are also known as Mitsuha.\n"
-#             "If you don’t know something, say: 'I don't have that information at the moment.'"
-#         )
-#     )
-#     if not memory.chat_memory.messages or not any(isinstance(msg, SystemMessage) for msg in memory.chat_memory.messages):
-#         memory.chat_memory.add_message(system_message)
-#     else:
-#         # Ensure the system message is always the first message
-#         memory.chat_memory.messages = [system_message] + [
-#             msg for msg in memory.chat_memory.messages if not isinstance(msg, SystemMessage)
-#         ]
-
-#     return memory
-
-# # Function: Save memory (after summarizing)
-# def save_memory(memory):
-#     try:
-#         # Get the summary of messages
-#         summary = summarize_conversation(memory.chat_memory.messages)
-
-#         # Append the summary as a SystemMessage instead of replacing the memory
-#         memory.chat_memory.add_message(SystemMessage(content=summary))
-
-#         # Save the updated memory to cache
-#         cache.set("chat_memory_messages", pickle.dumps(memory.chat_memory.messages), timeout=None)
-
-#     except Exception as e:
-#         print("❌ Error saving memory:", e)
-
-# # Main chatbot function
-# def chat_bot(user_input):
-#     memory = get_memory()
-
-#     # Add user message to memory
-#     if not memory.chat_memory.messages or memory.chat_memory.messages[-1].content != user_input:
-#         memory.chat_memory.add_message(HumanMessage(content=user_input))
-
-#     try:
-#         # Handle specific questions directly
-#         if user_input.lower() in ["who are you?", "what is your name?"]:
-#             return "I am Dhruv Sharma, an assistant. You can also call me Mitsuha."
-
-#         if "dhruv sharma" in user_input.lower():
-#             return "I am Dhruv Sharma's assistant chatbot, designed to help with various tasks."
+memory_saver = MemorySaver()
 
 
-#         # Handle ambiguous responses
-#         if user_input.lower() in ["yes", "no"]:
-#             return "Could you please clarify your question?"
+def get_qdrant_client():
+    from qdrant_client import QdrantClient
+    return QdrantClient(
+        url=os.getenv("QDRANT_URL"),
+        api_key=os.getenv("QDRANT_API_KEY")
+    )
 
-#         # Search relevant docs from Qdrant
-#         query_results = get_similar_ans(user_input)
-#         if not query_results:
-#             return "No relevant documents found."
+def get_gemini_llm():
+    from langchain_google_genai import ChatGoogleGenerativeAI
+    return ChatGoogleGenerativeAI(
+        model="gemini-2.0-flash",
+        temperature=0.2,
+        google_api_key=os.environ.get("GOOGLE_API_KEY")
+    )
 
-#         query_docs = [Document(page_content=str(hit.payload)) for hit in query_results]
+def get_groq_llm():
+    from langchain_groq import ChatGroq
+    return ChatGroq(
+        model="llama3-8b-8192",
+        temperature=0.2,
+        groq_api_key=os.environ.get("GROQ_API_KEY")
+    )
 
-#         # Run Gemini QA chain using the invoke method
-#         response = qa_chain.invoke({
-#             "input_documents": query_docs,
-#             "question": user_input  # Use the user's input directly
-#         })
+def get_embedder():
+    from langchain_google_genai import GoogleGenerativeAIEmbeddings
+    return GoogleGenerativeAIEmbeddings(model="models/embedding-001")
 
-#         # Extract the response content if it's a dictionary
-#         if isinstance(response, dict) and "output_text" in response:
-#             response_text = response["output_text"]
-#         else:
-#             response_text = str(response)
 
-#         # Check if the response is valid
-#         if not response_text.strip():
-#             return "I couldn't generate a meaningful response. Please try rephrasing your question."
 
-#         # Store Gemini’s answer to memory
-#         memory.chat_memory.add_message(AIMessage(content=response_text))
 
-#         # Save memory after processing
-#         save_memory(memory)
 
-#         return response_text
+# create a state graph for the LLM
+class State(TypedDict):
+    messages: Annotated[list[AnyMessage],add_messages]
 
-#     except Exception as e:
-#         print(f"Error in chat_bot: {e}")
-#         return "Something went wrong while processing your request."
+
+
+# function that decide which tool to call
+
+# making Rag tool
+def qdrant_rag_tool(query: str) -> str:
+    """
+    Searches Dhruv Sharma's portfolio content using vector similarity from Qdrant.
+
+    This function embeds the user's query and performs a semantic search against
+    Dhruv's portfolio website/documents that have been uploaded to Qdrant.
+
+    Args:
+        query (str): The user's question about Dhruv Sharma (e.g., education, skills, projects).
+
+    Returns:
+        str: The most relevant content retrieved from the portfolio vector store.
+    """
+
+    from langchain_qdrant import QdrantVectorStore
+    from langchain_core.messages import AIMessage
+
+    # Get the Qdrant client and embedder
+    qdrant_client = get_qdrant_client()
+    embedder = get_embedder()
+
+    # Initialize vector store
+    qdrant = QdrantVectorStore(
+        client=qdrant_client,
+        collection_name="portfolio",
+        embedding=embedder
+    )
+
+    # Perform similarity search
+    docs = qdrant.similarity_search(query, k=5)
+
+    # Collect relevant content
+    context = [doc.page_content for doc in docs]
+
+    # Join results into a single string (returning list of strings isn't helpful in most LLM chains)
+    return "\n\n".join(context)
+
+
+
+from langchain.tools import Tool
+tools= [ Tool.from_function(
+        qdrant_rag_tool,
+        name="PortfolioRAGSearch",
+        description="Search Dhruv Sharma’s portfolio (education, experience, projects, achievements, etc.) using semantic search."
+    )]
+
+system_prompt = """
+You are the official assistant of Dhruv Sharma.
+
+When the user says "you", assume they are referring to Dhruv Sharma, not you (the assistant).
+
+If the user's question is about Dhruv Sharma’s marks, education, projects, experience, or background, you MUST use the PortfolioRAGSearch tool.
+
+If no data is found in the portfolio, politely inform the user.
+
+If the question is not related to Dhruv Sharma, politely explain that you only assist with questions about him.
+"""
+
+
+def run_llm_with_tools(state:State):
+
+    from langchain.schema import SystemMessage, HumanMessage
+
+    llm = get_groq_llm().bind_tools(tools)
+
+    query = state['messages'][-1].content
+
+    result = llm.invoke([
+        SystemMessage(content=system_prompt),
+        HumanMessage(content=query)
+    ])
+
+
+    return {
+        "messages": [result] 
+    }
+
+# function for giving ans in formate
+def format_response(state:State):
+    llm = get_gemini_llm()
+    human_prompt = """
+You are Dhruv Sharma’s AI assistant.
+
+Your job is to format answers for end users. You're given:
+- The user's question
+- An initial (raw) answer generated by an internal system (RAG)
+Your task is to format this raw answer into a clean, user-friendly response.
+
+### Guidelines:
+1. Only output a **final, polished response** suitable for the user — do **not** include or refer to the original raw content.
+2. Use a professional, helpful, and clear tone.
+3. If any links are present, extract and move them to a **🔗 Links** section at the end, using markdown format.
+4. Do not include technical metadata, IDs, or debugging information.
+5. Never mention "raw answer", "RAG", or "retrieved documents".
+
+---
+
+**User Question:**  
+{question}
+
+**Initial Answer (for internal use only):**  
+{raw_answer}
+
+---
+
+✅ Now write the **final response** to show to the user, starting below this line:
+
+Formatted Response:
+"""
+
+
+
+    prompt = ChatPromptTemplate.from_template(human_prompt)
+
+
+    chain = prompt | llm
+    question = state['messages'][0].content
+    raw_answer = state['messages'][-1].content
+
+
+    result = chain.invoke({
+        "question": question,
+        "raw_answer": raw_answer
+    })
+
+    return {"messages": [result]}
+
+
+
+# Define the state graph
+graph = StateGraph(State)
+
+# Define the nodes in the graph
+graph.add_node("Run LLM with Tools",run_llm_with_tools)
+graph.add_node("Format Response",format_response)
+graph.add_node("tools",ToolNode(tools))
+
+# Define the transitions between nodes
+graph.add_edge(START, "Run LLM with Tools")
+graph.add_conditional_edges("Run LLM with Tools",tools_condition)
+graph.add_edge("tools", "Format Response")
+graph.add_edge("Format Response", END)
+
+main_graph = graph.compile(checkpointer=memory_saver)
+
+
+

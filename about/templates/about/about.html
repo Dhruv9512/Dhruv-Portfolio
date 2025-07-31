@@ -36,7 +36,7 @@
         </section>
 
         <section id="skills-section" class="about-card">
-            <h2>My Skills</h2> <hr>
+            <h2>Skills</h2> <hr>
             {% for v in Skill %}
             <div class="about-sub-card">
                 {% for j in v %}
@@ -50,11 +50,6 @@
                         {{ j.skill }}{% if not forloop.last %}, {% endif %}
                         {% endfor %}
                     </p></li>
-                    <li><p><strong>Proficiency:</strong></p>
-                        {% for j in v %}
-                        <li><p><b>{{ j.skill }}:</b> &nbsp {{ j.Proficiency }}</p></li>
-                        {% endfor %}
-                    </li>
                 </ul>
                 <br><br><br>
             </div>
@@ -62,7 +57,7 @@
         </section>
 
         <section id="certifications-section" class="about-card">
-            <h2>Certifications & Achievements</h2> <hr>
+            <h2>Certifications</h2> <hr>
             {% for v in Certifications_and_Achievements.certification_link %}
             <div class="about-sub-card">
                 {% for j in v %}
@@ -74,20 +69,7 @@
                     <li><p><strong>Link:</strong> &nbsp <a href="{{ j.link }}">View Certificate</a></p></li>
                 </ul>
                 {% endfor %}
-            </div> <br><br><br>
-            {% endfor %}
-
-            {% for v in Certifications_and_Achievements.Achievements %}
-            <div class="about-sub-card">
-                {% for j in v %}
-                {% if forloop.counter == 1 %}
-                <h4>{{ j.name }}</h4>
-                {% endif %}
-                <ul>
-                    <li id="Skill-Achievements"><p>{{ j.content }}</p></li>
-                </ul>
-                {% endfor %}
-            </div>
+            </div> <br><br>
             {% endfor %}
         </section>
 
@@ -98,12 +80,13 @@
                 {% for j in v %}
                 {% if forloop.counter == 1 %}
                 <h4>{{ j.name }}</h4>
+                <p><strong>{{ j.title }}</strong></p>
                 {% endif %}
                 <ul>
-                    <li><p><strong>{{ j.title }}</strong> &nbsp {{ j.content }}</p></li>
+                    <li>{{ j.content }}</li>
                 </ul>
                 {% endfor %}
-            </div><br><br><br>
+            </div><br><br>
             {% endfor %}
         </section>
     </div>

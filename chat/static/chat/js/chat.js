@@ -1,9 +1,9 @@
 // Hide chat icon and footer on page load
-window.onload = function() {
+window.onload = function () {
     const chat = document.getElementById('open-chat');
     const footer = document.querySelector('.main_footer');
     if (chat && footer) {
-        chat.style.display = 'none'; 
+        chat.style.display = 'none';
         footer.style.display = 'none';
     }
 };
@@ -13,7 +13,7 @@ async function fetchdata(messageText) {
     try {
         console.log('Sending message:', messageText);
 
-        const response = await fetch('https://dhruv-portfolio-chatbot.onrender.com/api/', {
+        const response = await fetch('/chat/api/', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ message: messageText })
@@ -32,7 +32,7 @@ async function fetchdata(messageText) {
             const lowerResp = botResponse.toLowerCase();
 
             if (lowerResp.includes("429") && lowerResp.includes("quota")) {
-                addMessage('bot', `🚫 *Gemini API quota exceeded.*\nTry again later or check limits: https://ai.google.dev/gemini-api/docs/rate-limits`);
+                addMessage('bot', `🚫 *Gemini API quota exceeded.*\nTry again later or check limits: [Gemini Rate Limits](https://ai.google.dev/gemini-api/docs/rate-limits)`);
             } else {
                 addMessage('bot', botResponse);
             }
@@ -51,16 +51,14 @@ async function fetchdata(messageText) {
 
 // Send message triggered by user action
 function sendMessage() {
-    console.log("sendMessage function called");
     const userInput = document.getElementById('user-input');
     const messageText = userInput.value.trim();
-    console.log('Sending message:', messageText);
 
     if (messageText) {
-        adduserMessage(messageText); // Show user message
-        userInput.value = '';        // Clear input field
-        showLoading();               // Show loader
-        userInput.disabled = true;   // Disable input to prevent spam
+        adduserMessage(messageText);
+        userInput.value = '';
+        showLoading();
+        userInput.disabled = true;
 
         setTimeout(() => {
             fetchdata(messageText);
@@ -78,7 +76,7 @@ function adduserMessage(text) {
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
 }
 
-// Add bot message to chat UI
+// Add bot or user message to chat UI with Markdown and buttons
 function addMessage(sender, text) {
     const main = document.createElement('div');
     main.className = 'd-flex wh-100 row';
@@ -96,13 +94,67 @@ function addMessage(sender, text) {
 
     const messageDiv = document.createElement('div');
     messageDiv.className = `message ${sender}-message`;
-    messageDiv.textContent = text;
-    main.appendChild(messageDiv);
 
+    if (sender === 'bot') {
+        messageDiv.innerHTML = convertMarkdownToHTML(text);
+    } else {
+        messageDiv.textContent = text;
+    }
+
+    main.appendChild(messageDiv);
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
 }
 
-// Create loader element for loading animation
+// Convert Markdown to HTML with bullet points and buttons
+function convertMarkdownToHTML(markdownText) {
+    // Convert **bold**
+    let html = markdownText.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+
+    // Convert *italic* (not list bullets)
+    html = html.replace(/(^|[^\\])\*(?!\s)(.*?)\*/g, '$1<em>$2</em>');
+
+    const lines = html.split('\n');
+    let result = '<ul>';
+    for (let line of lines) {
+        line = line.trim();
+
+        // Match Markdown-style [Label](URL) link with bullet
+        const match = line.match(/^\*\s*\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/);
+        if (match) {
+            const label = match[1];
+            const url = match[2];
+            result += `
+                <li>
+                    <a href="${url}" target="_blank" style="text-decoration: none;">
+                        <button class="btn btn-sm btn-primary" style="margin: 5px 0;">${label}</button>
+                    </a>
+                </li>`;
+        } else if (line.startsWith('* ')) {
+            // Handle regular bullet points
+            const text = line.substring(2).trim();
+            result += `<li>${text}</li>`;
+        } else if (line !== '') {
+            // Paragraph or line
+            result += `<p>${line}</p>`;
+        }
+    }
+    result += '</ul>';
+    return result;
+}
+
+
+// Show loading indicator
+function showLoading() {
+    createLoader();
+}
+
+// Hide loading indicator
+function hideLoading() {
+    const loadingDiv = document.querySelector('.main_div');
+    if (loadingDiv) loadingDiv.remove();
+}
+
+// Create loader element
 function createLoader() {
     const main = document.createElement('div');
     main.className = 'd-flex wh-100 row main_div align-items-center';
@@ -123,25 +175,14 @@ function createLoader() {
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
 }
 
-// Show loading indicator
-function showLoading() {
-    createLoader();
-}
-
-// Hide loading indicator
-function hideLoading() {
-    const loadingDiv = document.querySelector('.main_div');
-    if (loadingDiv) loadingDiv.remove();
-}
-
-// Handle "Enter" key press for sending message
+// Handle Enter key
 function handleKeyPress(event) {
     if (event.key === 'Enter') {
         sendMessage();
     }
 }
 
-// Toggle chatbot visibility on screen
+// Toggle chat visibility
 function toggleChat() {
     const chatbotContainer = document.querySelector('.chatbot-container');
     chatbotContainer.style.display = chatbotContainer.style.display === 'none' ? 'flex' : 'none';
