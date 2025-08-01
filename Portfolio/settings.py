@@ -51,11 +51,13 @@ MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware', 
 ]
 
-CORS_ALLOW_ALL_ORIGINS = [
+
+CORS_ALLOWED_ORIGINS = [
     "https://dhruv-portfolio-y8kt.onrender.com",
     "http://localhost:8000",
     "http://127.0.0.1:8000",
 ]
+
 
 ROOT_URLCONF = "Portfolio.urls"
 
