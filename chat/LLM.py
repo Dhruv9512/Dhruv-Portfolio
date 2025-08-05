@@ -6,6 +6,7 @@ from typing import Annotated
 from langgraph.prebuilt import ToolNode ,tools_condition
 from typing_extensions import TypedDict
 from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.messages import SystemMessage
 from langgraph.checkpoint.memory import MemorySaver
 import nest_asyncio
 nest_asyncio.apply()
@@ -52,15 +53,61 @@ class State(TypedDict):
 
 
 
-# function that decide which tool to call
+def extract_categories_with_gemini(query: str) -> list[str]:
+    import ast
 
-# making Rag tool
+    categories_list = [
+        "about me",
+        "certification",
+        "education_marks_academic",
+        "resume",
+        "skill",
+        "Work_Experience_and_Internships",
+        "projectwork"
+    ]
+
+    prompt = f"""
+You are a semantic classifier for Dhruv Sharma's portfolio. 
+Given this query: "{query}", return the most relevant category from this list:
+
+{categories_list}
+
+Return ONLY one category as a valid Python list of one string, like: ["projectwork"]
+"""
+
+    try:
+        model = get_gemini_llm()
+        response = model.invoke(prompt)
+        raw_text = response.content if hasattr(response, "content") else str(response)
+
+        print("Gemini raw response:", repr(raw_text))
+        cleaned_text = raw_text.strip()
+
+        # Auto-wrap plain text
+        if not cleaned_text.startswith("["):
+            cleaned_text = f'["{cleaned_text}"]'
+
+        categories = ast.literal_eval(cleaned_text)
+        if not isinstance(categories, list) or not categories:
+            raise ValueError("Invalid category format")
+
+        # Normalize and validate category
+        selected = categories[0].strip().lower().replace(" ", "_")
+        matched = [cat for cat in categories_list if cat.lower().replace(" ", "_") == selected]
+
+        return matched if matched else []
+
+    except Exception as e:
+        print("Error parsing Gemini category:", e)
+        return []
+
+
 def qdrant_rag_tool(query: str) -> str:
     """
     Searches Dhruv Sharma's portfolio content using vector similarity from Qdrant.
 
     This function embeds the user's query and performs a semantic search against
-    Dhruv's portfolio website/documents that have been uploaded to Qdrant.
+    Dhruv's portfolio website/documents stored in Qdrant, optionally filtered by category.
 
     Args:
         query (str): The user's question about Dhruv Sharma (e.g., education, skills, projects).
@@ -68,69 +115,105 @@ def qdrant_rag_tool(query: str) -> str:
     Returns:
         str: The most relevant content retrieved from the portfolio vector store.
     """
-
     from langchain_qdrant import QdrantVectorStore
-    from langchain_core.messages import AIMessage
 
-    # Get the Qdrant client and embedder
+    print("User query:", query)
+
+    # --- Get required clients ---
     qdrant_client = get_qdrant_client()
     embedder = get_embedder()
 
-    # Initialize vector store
-    qdrant = QdrantVectorStore(
-        client=qdrant_client,
-        collection_name="portfolio",
-        embedding=embedder
-    )
+    print("query: ",query)
+    # --- Classify query to get collection/category ---
+    categories = extract_categories_with_gemini(query)
+    print("Resolved categories:", categories)
 
-    # Perform similarity search
-    docs = qdrant.similarity_search(query, k=5)
+    if not categories:
+        return "No matching category found. Please rephrase your query."
 
-    # Collect relevant content
-    context = [doc.page_content for doc in docs]
+    collection = categories[0]
 
-    # Join results into a single string (returning list of strings isn't helpful in most LLM chains)
-    return "\n\n".join(context)
+    try:
+        # Create retriever
+        qdrant = QdrantVectorStore(
+            client=qdrant_client,
+            collection_name=collection,
+            embedding=embedder
+        )
+
+        retriever = qdrant.as_retriever(
+            search_type="mmr",
+            search_kwargs={"k": 5, "fetch_k": 20, "lambda_mult": 0.5}
+        )
+
+        docs = retriever.invoke(query)
+        context = [doc.page_content for doc in docs if doc.page_content.strip()]
+
+        print(f"Found {len(context)} relevant documents.")
+
+        return "\n\n".join(context) if context else "No relevant information found."
+    except Exception as e:
+        print("Error in Qdrant retrieval:", e)
+        return "An error occurred while retrieving data. Please try again later."
 
 
 
-from langchain.tools import Tool
-tools= [ Tool.from_function(
-        qdrant_rag_tool,
-        name="PortfolioRAGSearch",
-        description="Search Dhruv Sharma’s portfolio (education, experience, projects, achievements, etc.) using semantic search."
-    )]
+
+tools= [qdrant_rag_tool]
+
+llm = get_groq_llm().bind_tools(tools=tools)  
 
 system_prompt = """
 You are the official assistant of Dhruv Sharma.
 
-When the user says "you", assume they are referring to Dhruv Sharma, not you (the assistant).
+If the user tells you their name, remember it and refer to them by that name in future responses. Engage in friendly, conversational replies while staying professional.
 
-If the user's question is about Dhruv Sharma’s marks, education, projects, experience, or background, you MUST use the PortfolioRAGSearch tool.
+Your primary responsibility is to answer questions about Dhruv Sharma — including his marks, education, projects, experience, or personal/professional background.
 
-If no data is found in the portfolio, politely inform the user.
+You MUST ALWAYS send every Dhruv Sharma-related question to the PortfolioRAGSearch tool to retrieve the answer.
 
-If the question is not related to Dhruv Sharma, politely explain that you only assist with questions about him.
+If the user refers to "you", interpret it as referring to Dhruv Sharma — not yourself.
+
+If no relevant information is found from the portfolio, respond:
+"No information about that was found in Dhruv Sharma's portfolio."
+
+If the user asks something unrelated to Dhruv Sharma, respond with:
+"I can only assist with questions about Dhruv Sharma. Please ask something related to his portfolio."
+
+Remain concise, helpful, polite, and always stay on topic.
 """
 
 
-def run_llm_with_tools(state:State):
-
-    from langchain.schema import SystemMessage, HumanMessage
-
-    llm = get_groq_llm().bind_tools(tools)
-
-    query = state['messages'][-1].content
-
-    result = llm.invoke([
-        SystemMessage(content=system_prompt),
-        HumanMessage(content=query)
-    ])
 
 
-    return {
-        "messages": [result] 
-    }
+
+
+def run_llm_with_tools(state: State):
+    messages = state["messages"]
+    system_msg = SystemMessage(content=system_prompt)
+    all_messages = [system_msg] + messages
+
+    # 1️⃣ Get latest user message
+    current_user_msg = messages[-1].content if messages else ""
+
+    # 2️⃣ Check for duplicate question
+    for i in range(len(messages) - 2):
+        if (
+            messages[i].type == "human" and
+            messages[i].content.strip().lower() == current_user_msg.strip().lower()
+        ):
+            # Found repeated question — return the next assistant message
+            for j in range(i + 1, len(messages)):
+                if messages[j].type == "ai":
+                    print("✅ Repeated question detected. Returning cached formatted response.")
+                    return {"messages": [messages[j+2].content]}
+
+    # 3️⃣ Proceed normally if no match
+    result = llm.invoke(all_messages)
+    print(f"LLM response: {result.content}")
+    return {"messages": [result]}
+
+
 
 # function for giving ans in formate
 def format_response(state:State):
@@ -141,7 +224,11 @@ You are Dhruv Sharma’s AI assistant.
 Your job is to format answers for end users. You're given:
 - The user's question
 - An initial (raw) answer generated by an internal system (RAG)
-Your task is to format this raw answer into a clean, user-friendly response.
+
+Your task is to:
+- Format the answer if it is related to Dhruv Sharma (his education, projects, experience, skills, achievements, or background).
+- Refuse to answer general knowledge or unrelated questions (e.g., capitals of countries, weather, trivia).
+
 
 ### Guidelines:
 1. Only output a **final, polished response** suitable for the user — do **not** include or refer to the original raw content.
@@ -171,7 +258,7 @@ Formatted Response:
 
 
     chain = prompt | llm
-    question = state['messages'][0].content
+    question = SystemMessage(content=system_prompt)+state['messages'][0].content
     raw_answer = state['messages'][-1].content
 
 

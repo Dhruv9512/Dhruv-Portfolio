@@ -32,7 +32,7 @@ def cheatapi(request):
                 "configurable":{"thread_id":"1"}
             }
             response=main_graph.invoke(
-                {"messages": HumanMessage(content=message)},
+                {"messages": message},
                 config=config
             )
            
