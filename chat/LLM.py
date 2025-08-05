@@ -1,21 +1,29 @@
 import os
+import logging
 from dotenv import load_dotenv
-from langgraph.graph import StateGraph,START,END
-from langgraph.graph.message import AnyMessage,add_messages
+from langgraph.graph import StateGraph, START, END
+from langgraph.graph.message import AnyMessage, add_messages
 from typing import Annotated
-from langgraph.prebuilt import ToolNode ,tools_condition
+from langgraph.prebuilt import ToolNode, tools_condition
 from typing_extensions import TypedDict
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.messages import SystemMessage
 from langgraph.checkpoint.memory import MemorySaver
 import nest_asyncio
-nest_asyncio.apply()
 
+nest_asyncio.apply()
 load_dotenv()
+
+# Setup logging
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s"
+)
+logger = logging.getLogger(__name__)
 
 memory_saver = MemorySaver()
 
-
+# --- Clients and Models --- #
 def get_qdrant_client():
     from qdrant_client import QdrantClient
     return QdrantClient(
@@ -43,27 +51,17 @@ def get_embedder():
     from langchain_google_genai import GoogleGenerativeAIEmbeddings
     return GoogleGenerativeAIEmbeddings(model="models/embedding-001")
 
-
-
-
-
-# create a state graph for the LLM
+# --- State Type --- #
 class State(TypedDict):
-    messages: Annotated[list[AnyMessage],add_messages]
+    messages: Annotated[list[AnyMessage], add_messages]
 
-
-
+# --- Category Extractor --- #
 def extract_categories_with_gemini(query: str) -> list[str]:
     import ast
 
     categories_list = [
-        "about me",
-        "certification",
-        "education_marks_academic",
-        "resume",
-        "skill",
-        "Work_Experience_and_Internships",
-        "projectwork"
+        "about me", "certification", "education_marks_academic",
+        "resume", "skill", "Work_Experience_and_Internships", "projectwork"
     ]
 
     prompt = f"""
@@ -80,10 +78,8 @@ Return ONLY one category as a valid Python list of one string, like: ["projectwo
         response = model.invoke(prompt)
         raw_text = response.content if hasattr(response, "content") else str(response)
 
-        print("Gemini raw response:", repr(raw_text))
+        logger.info(f"Gemini raw response: {repr(raw_text)}")
         cleaned_text = raw_text.strip()
-
-        # Auto-wrap plain text
         if not cleaned_text.startswith("["):
             cleaned_text = f'["{cleaned_text}"]'
 
@@ -91,42 +87,24 @@ Return ONLY one category as a valid Python list of one string, like: ["projectwo
         if not isinstance(categories, list) or not categories:
             raise ValueError("Invalid category format")
 
-        # Normalize and validate category
         selected = categories[0].strip().lower().replace(" ", "_")
         matched = [cat for cat in categories_list if cat.lower().replace(" ", "_") == selected]
-
         return matched if matched else []
 
     except Exception as e:
-        print("Error parsing Gemini category:", e)
+        logger.error(f"Error parsing Gemini category: {e}")
         return []
 
-
+# --- Tool for RAG --- #
 def qdrant_rag_tool(query: str) -> str:
-    """
-    Searches Dhruv Sharma's portfolio content using vector similarity from Qdrant.
-
-    This function embeds the user's query and performs a semantic search against
-    Dhruv's portfolio website/documents stored in Qdrant, optionally filtered by category.
-
-    Args:
-        query (str): The user's question about Dhruv Sharma (e.g., education, skills, projects).
-
-    Returns:
-        str: The most relevant content retrieved from the portfolio vector store.
-    """
     from langchain_qdrant import QdrantVectorStore
 
-    print("User query:", query)
-
-    # --- Get required clients ---
+    logger.info(f"User query: {query}")
     qdrant_client = get_qdrant_client()
     embedder = get_embedder()
 
-    print("query: ",query)
-    # --- Classify query to get collection/category ---
     categories = extract_categories_with_gemini(query)
-    print("Resolved categories:", categories)
+    logger.info(f"Resolved categories: {categories}")
 
     if not categories:
         return "No matching category found. Please rephrase your query."
@@ -134,7 +112,6 @@ def qdrant_rag_tool(query: str) -> str:
     collection = categories[0]
 
     try:
-        # Create retriever
         qdrant = QdrantVectorStore(
             client=qdrant_client,
             collection_name=collection,
@@ -148,21 +125,18 @@ def qdrant_rag_tool(query: str) -> str:
 
         docs = retriever.invoke(query)
         context = [doc.page_content for doc in docs if doc.page_content.strip()]
-
-        print(f"Found {len(context)} relevant documents.")
-
+        logger.info(f"Found {len(context)} relevant documents.")
         return "\n\n".join(context) if context else "No relevant information found."
+
     except Exception as e:
-        print("Error in Qdrant retrieval:", e)
+        logger.error(f"Error in Qdrant retrieval: {e}")
         return "An error occurred while retrieving data. Please try again later."
 
+# --- Tool Binding --- #
+tools = [qdrant_rag_tool]
+llm = get_groq_llm().bind_tools(tools=tools)
 
-
-
-tools= [qdrant_rag_tool]
-
-llm = get_groq_llm().bind_tools(tools=tools)  
-
+# --- System Prompt --- #
 system_prompt = """
 You are the official assistant of Dhruv Sharma.
 
@@ -183,40 +157,27 @@ If the user asks something unrelated to Dhruv Sharma, respond with:
 Remain concise, helpful, polite, and always stay on topic.
 """
 
-
-
-
-
-
+# --- LLM Tool Node --- #
 def run_llm_with_tools(state: State):
     messages = state["messages"]
     system_msg = SystemMessage(content=system_prompt)
     all_messages = [system_msg] + messages
 
-    # 1️⃣ Get latest user message
     current_user_msg = messages[-1].content if messages else ""
 
-    # 2️⃣ Check for duplicate question
     for i in range(len(messages) - 2):
-        if (
-            messages[i].type == "human" and
-            messages[i].content.strip().lower() == current_user_msg.strip().lower()
-        ):
-            # Found repeated question — return the next assistant message
+        if messages[i].type == "human" and messages[i].content.strip().lower() == current_user_msg.strip().lower():
             for j in range(i + 1, len(messages)):
                 if messages[j].type == "ai":
-                    print("✅ Repeated question detected. Returning cached formatted response.")
+                    logger.info("✅ Repeated question detected. Returning cached formatted response.")
                     return {"messages": [messages[j+2].content]}
 
-    # 3️⃣ Proceed normally if no match
     result = llm.invoke(all_messages)
-    print(f"LLM response: {result.content}")
+    logger.info(f"LLM response: {result.content}")
     return {"messages": [result]}
 
-
-
-# function for giving ans in formate
-def format_response(state:State):
+# --- Formatter Node --- #
+def format_response(state: State):
     llm = get_gemini_llm()
     human_prompt = """
 You are Dhruv Sharma’s AI assistant.
@@ -228,7 +189,6 @@ Your job is to format answers for end users. You're given:
 Your task is to:
 - Format the answer if it is related to Dhruv Sharma (his education, projects, experience, skills, achievements, or background).
 - Refuse to answer general knowledge or unrelated questions (e.g., capitals of countries, weather, trivia).
-
 
 ### Guidelines:
 1. Only output a **final, polished response** suitable for the user — do **not** include or refer to the original raw content.
@@ -252,40 +212,28 @@ Your task is to:
 Formatted Response:
 """
 
-
-
     prompt = ChatPromptTemplate.from_template(human_prompt)
-
-
     chain = prompt | llm
-    question = SystemMessage(content=system_prompt)+state['messages'][0].content
-    raw_answer = state['messages'][-1].content
 
+    question = SystemMessage(content=system_prompt) + state['messages'][0].content
+    raw_answer = state['messages'][-1].content
 
     result = chain.invoke({
         "question": question,
         "raw_answer": raw_answer
     })
 
+    logger.info("✅ Final response formatted successfully.")
     return {"messages": [result]}
 
-
-
-# Define the state graph
+# --- Graph --- #
 graph = StateGraph(State)
-
-# Define the nodes in the graph
-graph.add_node("Run LLM with Tools",run_llm_with_tools)
-graph.add_node("Format Response",format_response)
-graph.add_node("tools",ToolNode(tools))
-
-# Define the transitions between nodes
+graph.add_node("Run LLM with Tools", run_llm_with_tools)
+graph.add_node("Format Response", format_response)
+graph.add_node("tools", ToolNode(tools))
 graph.add_edge(START, "Run LLM with Tools")
-graph.add_conditional_edges("Run LLM with Tools",tools_condition)
+graph.add_conditional_edges("Run LLM with Tools", tools_condition)
 graph.add_edge("tools", "Format Response")
 graph.add_edge("Format Response", END)
 
 main_graph = graph.compile(checkpointer=memory_saver)
-
-
-
