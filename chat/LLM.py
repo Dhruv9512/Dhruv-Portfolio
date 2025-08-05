@@ -138,7 +138,7 @@ def qdrant_rag_tool(query: str) -> str:
 
         docs = retriever.invoke(query)
         context = [doc.page_content for doc in docs if doc.page_content.strip()]
-        logger.info(f"Found {len(context)} relevant documents.")
+        logger.info(f"Found {context} relevant documents.")
         return "\n\n".join(context) if context else "No relevant information found."
 
     except Exception as e:
@@ -236,7 +236,7 @@ Formatted Response:
         "raw_answer": raw_answer
     })
 
-    logger.info("✅ Final response formatted successfully.")
+    logger.info("✅ Final response formatted successfully.",result)
     return {"messages": [result]}
 
 # --- Graph --- #
