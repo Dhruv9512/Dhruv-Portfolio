@@ -10,7 +10,7 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.messages import SystemMessage
 from langgraph.checkpoint.memory import MemorySaver
 import nest_asyncio
-from langchain_core.tools import tool
+
 
 nest_asyncio.apply()
 load_dotenv()
@@ -97,7 +97,6 @@ Return ONLY one category as a valid Python list of one string, like: ["projectwo
         return []
 
 # --- Tool for RAG --- #
-@tool("portfolio_rag_search", description="Searches Dhruv Sharma's portfolio using vector similarity from Qdrant.")
 def qdrant_rag_tool(query: str) -> str:
     """
     Searches Dhruv Sharma's portfolio content using vector similarity from Qdrant.
@@ -159,7 +158,7 @@ If the user tells you their name, remember it and refer to them by that name in 
 
 Your primary responsibility is to answer questions about Dhruv Sharma — including his marks, education, projects, experience, or personal/professional background.
 
-You MUST ALWAYS send every Dhruv Sharma-related question to the PortfolioRAGSearch tool to retrieve the answer.
+You MUST ALWAYS send every Dhruv Sharma-related question to the qdrant_rag_tool tool to retrieve the answer.
 
 If the user refers to "you", interpret it as referring to Dhruv Sharma — not yourself.
 
