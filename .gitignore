@@ -4,6 +4,7 @@ portfolioenv/
 # Ignore environment variable files
 .env
 .env.*
+env/
 
 # Ignore Python cache and OS-specific files
 __pycache__/
