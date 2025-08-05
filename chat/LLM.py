@@ -97,6 +97,19 @@ Return ONLY one category as a valid Python list of one string, like: ["projectwo
 
 # --- Tool for RAG --- #
 def qdrant_rag_tool(query: str) -> str:
+    """
+    Searches Dhruv Sharma's portfolio content using vector similarity from Qdrant.
+
+    This function embeds the user's query and performs a semantic search against
+    Dhruv's portfolio website/documents stored in Qdrant, optionally filtered by category.
+
+    Args:
+        query (str): The user's question about Dhruv Sharma (e.g., education, skills, projects).
+
+    Returns:
+        str: The most relevant content retrieved from the portfolio vector store.
+    """
+
     from langchain_qdrant import QdrantVectorStore
 
     logger.info(f"User query: {query}")
