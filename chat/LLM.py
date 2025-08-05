@@ -188,7 +188,7 @@ def run_llm_with_tools(state: State):
                     return {"messages": [messages[j+2].content]}
 
     result = llm.invoke(all_messages)
-    logger.info(f"LLM response: {result.content}")
+    logger.info(f"LLM response: {result}")
     return {"messages": [result]}
 
 # --- Formatter Node --- #
