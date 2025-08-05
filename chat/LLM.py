@@ -10,6 +10,7 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.messages import SystemMessage
 from langgraph.checkpoint.memory import MemorySaver
 import nest_asyncio
+from langchain_core.tools import tool
 
 nest_asyncio.apply()
 load_dotenv()
@@ -96,6 +97,7 @@ Return ONLY one category as a valid Python list of one string, like: ["projectwo
         return []
 
 # --- Tool for RAG --- #
+@tool("portfolio_rag_search", description="Searches Dhruv Sharma's portfolio using vector similarity from Qdrant.")
 def qdrant_rag_tool(query: str) -> str:
     """
     Searches Dhruv Sharma's portfolio content using vector similarity from Qdrant.
@@ -236,7 +238,8 @@ Formatted Response:
         "raw_answer": raw_answer
     })
 
-    logger.info("✅ Final response formatted successfully.",result)
+    logger.info(f"✅ Final response formatted successfully: {result}")
+
     return {"messages": [result]}
 
 # --- Graph --- #
