@@ -166,9 +166,6 @@ def qdrant_rag_tool(query: str) -> str:
     return "\n\n---\n\n".join(results)
 
 # --- Tool Binding --- #
-# tools = [qdrant_rag_tool]
-from langchain_core.tools import Tool
-
 tools = [qdrant_rag_tool]
 
 llm = get_groq_llm().bind_tools(tools=tools)
