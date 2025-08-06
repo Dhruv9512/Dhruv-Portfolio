@@ -59,6 +59,7 @@ class State(TypedDict):
 # --- Category Extractor --- #
 def extract_categories_with_gemini(query: str) -> list[str]:
     import ast
+    import re
 
     categories_list = [
         "about me", "certification", "education_marks_academic",
@@ -67,11 +68,17 @@ def extract_categories_with_gemini(query: str) -> list[str]:
 
     prompt = f"""
 You are a semantic classifier for Dhruv Sharma's portfolio. 
-Given this query: "{query}", return the most relevant category from this list:
+Given this query: "{query}", return all relevant categories from this list:
 
 {categories_list}
 
-Return ONLY one category as a valid Python list of one string, like: ["projectwork"]
+Your task:
+- Analyze the query carefully.
+- Return a valid Python list (e.g., ["projectwork", "education_marks_academic"]) containing ALL matching categories.
+- Only include categories from the provided list. No made-up categories.
+- No explanations, no formatting, no markdown.
+
+Only return a valid Python list of strings as plain text.
 """
 
     try:
@@ -80,21 +87,25 @@ Return ONLY one category as a valid Python list of one string, like: ["projectwo
         raw_text = response.content if hasattr(response, "content") else str(response)
 
         logger.info(f"Gemini raw response: {repr(raw_text)}")
-        cleaned_text = raw_text.strip()
-        if not cleaned_text.startswith("["):
-            cleaned_text = f'["{cleaned_text}"]'
+
+        # 💡 Strip code fences if present
+        cleaned_text = re.sub(r"```(?:python)?\n?", "", raw_text.strip(), flags=re.IGNORECASE).strip("`").strip()
 
         categories = ast.literal_eval(cleaned_text)
-        if not isinstance(categories, list) or not categories:
-            raise ValueError("Invalid category format")
 
-        selected = categories[0].strip().lower().replace(" ", "_")
-        matched = [cat for cat in categories_list if cat.lower().replace(" ", "_") == selected]
-        return matched if matched else []
+        if not isinstance(categories, list):
+            raise ValueError("Gemini did not return a valid list.")
+
+        # Normalize + match
+        normalized = [cat.strip().lower().replace(" ", "_") for cat in categories]
+        matched = [cat for cat in categories_list if cat.lower().replace(" ", "_") in normalized]
+
+        return matched
 
     except Exception as e:
         logger.error(f"Error parsing Gemini category: {e}")
         return []
+
 
 # --- Tool for RAG --- #
 def qdrant_rag_tool(query: str) -> str:
@@ -123,31 +134,47 @@ def qdrant_rag_tool(query: str) -> str:
     if not categories:
         return "No matching category found. Please rephrase your query."
 
-    collection = categories[0]
+    results = []
 
-    try:
-        qdrant = QdrantVectorStore(
-            client=qdrant_client,
-            collection_name=collection,
-            embedding=embedder
-        )
+    for collection in categories:
+        try:
+            qdrant = QdrantVectorStore(
+                client=qdrant_client,
+                collection_name=collection,
+                embedding=embedder
+            )
 
-        retriever = qdrant.as_retriever(
-            search_type="mmr",
-            search_kwargs={"k": 5, "fetch_k": 20, "lambda_mult": 0.5}
-        )
+            retriever = qdrant.as_retriever(
+                search_type="mmr",
+                search_kwargs={"k": 5, "fetch_k": 20, "lambda_mult": 0.5}
+            )
 
-        docs = retriever.invoke(query)
-        context = [doc.page_content for doc in docs if doc.page_content.strip()]
-        logger.info(f"Found {context} relevant documents.")
-        return "\n\n".join(context) if context else "No relevant information found."
+            docs = retriever.invoke(query)
+            context = [doc.page_content for doc in docs if doc.page_content.strip()]
+            if context:
+                results.append(f"📁 **{collection}**:\n" + "\n".join(context))
 
-    except Exception as e:
-        logger.error(f"Error in Qdrant retrieval: {e}")
-        return "An error occurred while retrieving data. Please try again later."
+        except Exception as e:
+            logger.error(f"Error retrieving from collection '{collection}': {e}")
+            continue
+
+    if not results:
+        return "No relevant information found in any matching category."
+
+    return "\n\n---\n\n".join(results)
 
 # --- Tool Binding --- #
-tools = [qdrant_rag_tool]
+# tools = [qdrant_rag_tool]
+from langchain_core.tools import Tool
+
+tools = [
+    Tool.from_function(
+        func=qdrant_rag_tool,
+        name="qdrant_rag_tool",
+        description="Search Dhruv Sharma's portfolio via semantic vector search."
+    )
+]
+
 llm = get_groq_llm().bind_tools(tools=tools)
 
 # --- System Prompt --- #
@@ -156,9 +183,9 @@ You are the official assistant of Dhruv Sharma.
 
 If the user tells you their name, remember it and refer to them by that name in future responses. Engage in friendly, conversational replies while staying professional.
 
-Your primary responsibility is to answer questions about Dhruv Sharma — including his marks, education, projects, experience, or personal/professional background.
-
 You MUST ALWAYS send every Dhruv Sharma-related question to the qdrant_rag_tool tool to retrieve the answer.
+
+Your primary responsibility is to answer questions about Dhruv Sharma — including his marks, education, projects, experience, or personal/professional background.
 
 If the user refers to "you", interpret it as referring to Dhruv Sharma — not yourself.
 
