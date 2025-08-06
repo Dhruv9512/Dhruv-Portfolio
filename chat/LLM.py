@@ -252,6 +252,8 @@ Formatted Response:
     question = SystemMessage(content=system_prompt) + state['messages'][0].content
     raw_answer = state['messages'][-1].content
 
+    logger.info(f" raw_answer: {raw_answer}")
+
     result = chain.invoke({
         "question": question,
         "raw_answer": raw_answer
