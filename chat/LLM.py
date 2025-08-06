@@ -93,6 +93,8 @@ Only return a valid Python list of strings as plain text.
 
         categories = ast.literal_eval(cleaned_text)
 
+        
+
         if not isinstance(categories, list):
             raise ValueError("Gemini did not return a valid list.")
 
@@ -167,13 +169,7 @@ def qdrant_rag_tool(query: str) -> str:
 # tools = [qdrant_rag_tool]
 from langchain_core.tools import Tool
 
-tools = [
-    Tool.from_function(
-        func=qdrant_rag_tool,
-        name="qdrant_rag_tool",
-        description="Search Dhruv Sharma's portfolio via semantic vector search."
-    )
-]
+tools = [qdrant_rag_tool]
 
 llm = get_groq_llm().bind_tools(tools=tools)
 
