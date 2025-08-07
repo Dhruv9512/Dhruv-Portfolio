@@ -8,26 +8,34 @@
 
 {% block content %}
 
-<div class="container-fluid mt-5 d-flex flex-column seemyworkdiv">
+    <div class="project-card rounded-3xl flex flex-col">
+        
+        <div class="p-6 flex items-center justify-center">
+            <img src="{{ Data.work.Work_Image }}" alt="My work image" class="seemywork-img rounded-xl w-full">
+        </div>
 
-    <!-- Image Section -->
-    <div class="seemywork-img-container d-flex flex-column justify-content-center mt-0">
-        <img src="{{ Data.work.Work_Image }}" alt="My work image" class="seemyworkimg img-fluid">
+        <div class="p-6 flex flex-col justify-center">
+            <h4 class="text-3xl md:text-4xl font-extrabold text-white mb-4">{{ Data.work.title }}</h4>
+
+            <div class="work-info-list space-y-6 text-gray-300">
+                <p><strong>Description:</strong> {{ Data.description }}</p>
+                
+                <div class="flex flex-wrap items-center gap-4">
+                    <p class="font-bold text-white">Links:</p>
+                    <a href="{{ Data.github_link }}" target="_blank" class="btn-link">
+                        <i class="fa fa-github text-xl"></i> <span>GitHub</span>
+                    </a>
+                    {% if Data.website_link == "https://NULL.com" %}
+                        <p class="text-red-400 font-semibold text-center">Website Not Available</p>
+                    {% else %}
+                        <a href="{{ Data.website_link }}" target="_blank" class="btn-link">
+                            <i class="fa fa-external-link text-xl"></i> <span>Website</span>
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
     </div>
-    <h4 class="seemyworkh4 text-center">{{ Data.work.title }}</h4>
-
-    <!-- Information List Section -->
-    <hr>
-    <ul class="work-info-list mx-5 seemyworklist" style="list-style-type: none; text-align: left;">
-        <li><p><strong><u>Description: </u>&nbsp &nbsp</strong>{{ Data.description }}</p></li>
-        <li><p><strong><u>Github Link:</u>&nbsp &nbsp</strong><a href="{{ Data.github_link }}" target="_blank"> <b>Link</b></a></p></li>
-        {% if Data.website_link == "https://NULL.com" %}
-            <li><p><strong><u>Website Link: </u>&nbsp &nbsp</strong><b>Web Site Is Not Available</b></p></li>
-        {% else %}
-            <li><p><strong><u>Website Link:</u>&nbsp &nbsp</strong><a href="{{ Data.website_link }}" target="_blank"><b>Link</b></a></p></li>
-        {% endif %}
-    </ul>
-</div>
 
 {% endblock %}
 

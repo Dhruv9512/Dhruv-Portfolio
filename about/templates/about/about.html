@@ -6,91 +6,81 @@
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid mt-5 mb-5 row gy-5 d-flex justify-content-between z-0">
-    <div class="col-lg-3 col-md-4 col-12" id="nav-left">
-        <!-- Left-side Navigation links -->
-        <ul class="nav d-flex flex-column justify-content-start" id="section-nav">
-            <li><a href="#education-section" aria-label="Navigate to Education section" aria-controls="education-section">Education</a></li>
-            <li><a href="#skills-section" aria-label="Navigate to Skills section" aria-controls="skills-section">My Skills</a></li>
-            <li><a href="#certifications-section" aria-label="Navigate to Certifications section" aria-controls="certifications-section">Certifications & Achievements</a></li>
-            <li><a href="#work-section" aria-label="Navigate to Work Experience section" aria-controls="work-section">Work Experience / Internships</a></li>
-        </ul>
-    </div>
 
-    <div class="col-lg-9 col-md-8 col-12" id="content-right">
-        <!-- Content Sections -->
-        <section id="education-section" class="about-card">
-            <h2>Education</h2> <hr>
+<div class="lg:w-3/4 xl:w-4/5 space-y-16">
+        <section id="education-section" class="about-section">
+            <h2 class="text-3xl font-extrabold text-white">Education</h2>
+            <hr class="my-6 border-gray-700">
             {% for v in Education %}
-            <div class="about-sub-card">
-                <h4>{{ v.Name }}</h4>
-                <ul>
-                    <li><p><strong>Institution:</strong> &nbsp {{ v.institution }}</p></li>
-                    <li><p><strong>Address:</strong> &nbsp {{ v.address }}</p></li>
-                    <li><p><strong>Status:</strong> &nbsp {{ v.status }}</p></li>
-                    <li><p><strong>Score:</strong> &nbsp {{ v.score }}</p></li>
+            <div class="about-item mb-8">
+                <h4 class="text-xl font-bold text-cyan-400">{{ v.Name }}</h4>
+                <ul class="mt-2 space-y-1 text-gray-300">
+                    <li><p><strong>Institution:</strong> {{ v.institution }}</p></li>
+                    <li><p><strong>Address:</strong> {{ v.address }}</p></li>
+                    <li><p><strong>Status:</strong> {{ v.status }}</p></li>
+                    <li><p><strong>Score:</strong> {{ v.score }}</p></li>
                 </ul>
-                <br><br><br>
             </div>
             {% endfor %}
         </section>
 
-        <section id="skills-section" class="about-card">
-            <h2>Skills</h2> <hr>
+        <section id="skills-section" class="about-section">
+            <h2 class="text-3xl font-extrabold text-white">Skills</h2>
+            <hr class="my-6 border-gray-700">
             {% for v in Skill %}
-            <div class="about-sub-card">
+            <div class="about-item mb-8">
                 {% for j in v %}
                 {% if forloop.counter == 1 %}
-                <h4>{{ j.Name }}</h4>
+                <h4 class="text-xl font-bold text-cyan-400">{{ j.Name }}</h4>
                 {% endif %}
                 {% endfor %}
-                <ul>
-                    <li><p><strong>Skills:</strong> &nbsp
+                <ul class="mt-2 text-gray-300">
+                    <li><p><strong>Skills:</strong>
                         {% for j in v %}
                         {{ j.skill }}{% if not forloop.last %}, {% endif %}
                         {% endfor %}
                     </p></li>
                 </ul>
-                <br><br><br>
             </div>
             {% endfor %}
         </section>
 
-        <section id="certifications-section" class="about-card">
-            <h2>Certifications</h2> <hr>
+        <section id="certifications-section" class="about-section">
+            <h2 class="text-3xl font-extrabold text-white">Certifications & Achievements</h2>
+            <hr class="my-6 border-gray-700">
             {% for v in Certifications_and_Achievements.certification_link %}
-            <div class="about-sub-card">
+            <div class="about-item mb-8">
                 {% for j in v %}
                 {% if forloop.counter == 1 %}
-                <h4>{{ j.name }}</h4>
+                <h4 class="text-xl font-bold text-cyan-400">{{ j.name }}</h4>
                 {% endif %}
-                <ul>
-                    <li><p><strong>{{ j.title }}</strong> &nbsp {{ j.content }}</p></li>
-                    <li><p><strong>Link:</strong> &nbsp <a href="{{ j.link }}">View Certificate</a></p></li>
+                <ul class="mt-2 space-y-1 text-gray-300">
+                    <li><p><strong>{{ j.title }}:</strong> {{ j.content }}</p></li>
+                    <li><p><strong>Link:</strong> <a href="{{ j.link }}" class="text-cyan-400 hover:text-cyan-500 transition-colors duration-300">View Certificate</a></p></li>
                 </ul>
                 {% endfor %}
-            </div> <br><br>
+            </div>
             {% endfor %}
         </section>
 
-        <section id="work-section" class="about-card">
-            <h2>Work Experience / Internships</h2> <hr>
+        <section id="work-section" class="about-section">
+            <h2 class="text-3xl font-extrabold text-white">Work Experience / Internships</h2>
+            <hr class="my-6 border-gray-700">
             {% for v in Work_Experience_and_Internships %}
-            <div class="about-sub-card">
+            <div class="about-item mb-8">
                 {% for j in v %}
                 {% if forloop.counter == 1 %}
-                <h4>{{ j.name }}</h4>
-                <p><strong>{{ j.title }}</strong></p>
+                <h4 class="text-xl font-bold text-cyan-400">{{ j.name }}</h4>
+                <p class="text-gray-300 mt-1"><strong>{{ j.title }}</strong></p>
                 {% endif %}
-                <ul>
+                <ul class="mt-2 text-gray-300 list-disc list-inside">
                     <li>{{ j.content }}</li>
                 </ul>
                 {% endfor %}
-            </div><br><br>
+            </div>
             {% endfor %}
         </section>
     </div>
-</div>
 {% endblock %}
 
 {% block js %}

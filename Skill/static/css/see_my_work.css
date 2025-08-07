@@ -1,199 +1,23 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+/* css/see_my_work.css */
 
-/* General Styles */
-body {
-    font-family: 'Poppins', sans-serif; /* Use Poppins font */
+.seemywork-img {
+    height: auto;
+    max-height: 450px;
+    object-fit: contain; 
 }
 
-/* Seemy Work Section */
-.seemyworkdiv {
-    margin-bottom: 10rem;
-    padding: 2rem; /* Added padding for better spacing */
-    background-color: #ffffff; /* White background for contrast */
-    border-radius: 10px; /* Rounded corners */
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.01); /* Subtle shadow for depth */
-}
-
-.container {
-    padding: 0;
-    max-width: 100%;
-    width: 100%;
-}
-
-.seemywork-img-container {
-    width: 90%;
-    max-height: 500px;
-    overflow: hidden;
-    display: flex;
-    justify-content: center;
+.btn-link {
+    display: inline-flex;
     align-items: center;
-    border-radius: 8px;
-    margin: 0 auto 1rem; /* Centered with auto margins */
+    gap: 8px;
+    background-color: #0d9488;
+    color: #ffffff;
+    font-weight: 600;
+    padding: 10px 20px;
+    border-radius: 9999px;
+    transition: background-color 0.3s ease;
 }
 
-.seemywork-img-container img {
-    width: 100%;
-    height: 100%; /* Ensure the image covers the entire height */
-    object-fit: cover;
-    object-position: center;
-    border-radius: 8px;
-}
-
-.seemyworklist {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
-
-.seemyworklist li {
-    margin-top: 2rem;
-    margin-bottom: 4rem;
-}
-
-.seemyworklist li p {
-    color:  rgba(6, 6, 6, 0.6);
-    font-size: 18px;  
-}
-
-.seemyworklist li p strong {
-    color: #2699FB; /* Highlighted text color */
-    font-size: 23px;  /* Reduced font size */
-}
-
-.seemyworkh4 {
-    text-align: center;
-    color: #2699FB;
-    text-shadow: 0 0 5px rgba(38, 153, 251, 0.7);
-    font-weight: bold;
-    font-size: 26px; /* Reduced font size */
-    margin-bottom: 2rem; /* Added margin for spacing */
-}
-
-/* Button Styling */
-.seemywork-button {
-    display: inline-block;
-    padding: 10px 20px; /* Padding for button */
-    background: linear-gradient(to right, #0ACEFE, #2699FB); /* Gradient background */
-    color: white; /* White text */
-    border: none;
-    border-radius: 5px; /* Rounded corners */
-    font-size: 15px; /* Reduced font size */
-    cursor: pointer; /* Pointer cursor */
-    transition: background 0.3s ease, transform 0.3s ease; /* Transition effects */
-    margin-top: 1rem; /* Space above the button */
-}
-
-.seemywork-button:hover {
-    background: linear-gradient(to right, #2699FB, #0ACEFE); /* Reverse gradient on hover */
-    transform: scale(1.05); /* Slightly enlarge on hover */
-    background: linear-gradient(to right, #2699FB, #0ACEFE); /* Reverse gradient on hover */
-}
-
-/* Mobile Responsiveness */
-@media (max-width: 900px) {
-    .seemyworkdiv {
-        margin-bottom: 5rem;
-        padding: 1.5rem; /* Adjust padding for smaller screens */
-    }
-
-    .seemywork-img-container {
-        max-height: 300px; /* Reduced max-height for smaller screens */
-    }
-
-    .seemywork-img-container img {
-        width: 90%;
-        max-width: 100%;
-        height: auto; /* Let the height adjust automatically */
-    }
-
-    .seemyworklist li p {
-        font-size: 17px;  /* Further reduced font size */
-        line-height: 1.4;
-    }
-
-    .seemyworklist li p strong {
-        font-size: 20px;  /* Further reduced font size */
-    }
-
-    .seemyworkh4 {
-        font-size: 24px;  /* Further reduced font size */
-    }
-
-    .seemyworklist {
-        padding-left: 0;
-        margin-left: 0;
-    }
-
-    .seemyworklist li {
-        margin-top: 1rem;
-        margin-bottom: 2rem;
-    }
-}
-
-@media (max-width: 480px) {
-    .seemyworkdiv {
-        margin-bottom: 3rem;
-        padding: 1rem; /* Further reduced padding for mobile */
-    }
-
-    .seemywork-img-container {
-        max-height: 250px;
-        width: 100%;
-    }
-
-    .seemywork-img-container img {
-        width: 100%;
-        height: 100%; /* Ensures the image covers the entire height */
-        object-fit: cover;
-    }
-
-    .seemyworklist li p {
-        font-size: 12px;  /* Further reduced font size */
-        line-height: 1.3;
-        margin-left: -2.5rem;
-        padding: 0;
-    }
-
-    .seemyworklist li p strong {
-        font-size: 14px;  /* Further reduced font size */
-    }
-
-    .seemyworkh4 {
-        font-size: 22px;  /* Further reduced font size */
-        margin-top: 1rem;
-    }
-
-    .seemyworklist {
-        padding-left: 0;
-        margin-left: 0;
-    }
-
-    .seemyworklist li {
-        margin-top: 0.5rem;
-        margin-bottom: 1.5rem;
-    }
-}
-
-@media (min-width: 1025px) {
-    .seemywork-img-container {
-        max-height: 500px; /* Maximum height for larger screens */
-    }
-
-    .seemywork-img-container img {
-        width: 70%;
-        height: auto; /* Adjust height based on width */
-    }
-
-    .seemyworkh4 {
-        font-size: 26px;  /* Reduced font size */
-    }
-
-    .seemyworklist {
-        padding-left: 20px;
-    }
-
-    .seemyworklist li {
-        margin-top: 2rem;
-        margin-bottom: 4rem;
-    }
+.btn-link:hover {
+    background-color: #0f766e;
 }

@@ -1,31 +1,65 @@
 {% extends "index/index.html" %}
 {% load static %}
 
-{% comment %} CSS link {% endcomment %}
 {% block css %}
-<link rel="stylesheet" href="{% static "home/css/home.css" %}">
+<link rel="stylesheet" href="{% static 'home/css/home.css' %}">
 {% endblock %}
 
-{% comment %} Home content {% endcomment %}
 {% block content %}
-<div class="container-fluid d-flex align-items-center justify-content-center vh-100" id="main_div" >
-  <div class="row w-100 d-flex justify-content-center justify-content-lg-around">
-  
-    <!-- Intro Section -->
-    <div class="col-lg-7 col-12 d-flex flex-column justify-content-center align-items-center text-center main_intro_div">
-      <div class="intro">
-        <p class="self" style="font-size: 1.5em;">HEY THERE!</p>
-        <h4 style="font-size: 2.5em;">I AM DHRUV SHARMA</h4>
-        <p class="self" style="font-size: 1.2em;">My Portfolio is a representation of all that I've learned and accomplished as a B.C.A student.</p><br>
-        <a class="btn btn-primary Resume" download href="{{ home_Image.Resume.content }}" title="Resume"><i class="fa fa-download"></i> Download Resume</a>
-      </div>
-    </div>
-  </div>
-</div>
 
+    <div class="absolute inset-0 z-0 opacity-20">
+        <canvas id="particles-js" class="w-full h-full"></canvas>
+    </div>
+
+    <div class="w-full max-w-4xl text-center space-y-6 relative z-10">
+        <p class="text-xl md:text-2xl font-light text-cyan-400 tracking-wide opacity-0 animate-fade-in-up-1">
+            HEY THERE!
+        </p>
+
+        <h1 class="text-4xl md:text-6xl font-extrabold text-white leading-tight opacity-0 animate-fade-in-up-2">
+            I AM DHRUV SHARMA
+        </h1>
+
+        <p class="text-lg md:text-xl text-gray-400 max-w-2xl mx-auto opacity-0 animate-fade-in-up-3">
+            My Portfolio is a representation of all that I've learned and accomplished as a
+            <strong class="text-cyan-400 font-semibold">B.C.A</strong> student.
+        </p>
+
+        <a href="{{ home_Image.Resume.content }}" download title="Download Resume"
+            class="inline-flex items-center justify-center gap-3 bg-cyan-600 hover:bg-cyan-700 text-white px-8 py-4 rounded-full font-bold text-lg shadow-xl transition-all duration-300 ease-in-out transform hover:scale-105 opacity-0 animate-fade-in-up-4">
+            <i class="fa fa-download"></i>
+            <span>Download Resume</span>
+        </a>
+   
+</div>
 {% endblock %}
 
-{% comment %} JS link {% endcomment %}
 {% block js %}
-<script src="{% static "home/js/home.js" %}"></script>
+<script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+<script>
+    particlesJS('particles-js', {
+        'particles': {
+            'number': { 'value': 80, 'density': { 'enable': true, 'value_area': 800 } },
+            'color': { 'value': '#ffffff' },
+            'shape': { 'type': 'circle', 'stroke': { 'width': 0, 'color': '#000000' }, 'polygon': { 'nb_sides': 5 } },
+            'opacity': { 'value': 0.5, 'random': false, 'anim': { 'enable': false, 'speed': 1, 'opacity_min': 0.1, 'sync': false } },
+            'size': { 'value': 3, 'random': true, 'anim': { 'enable': false, 'speed': 40, 'size_min': 0.1, 'sync': false } },
+            'line_linked': { 'enable': true, 'distance': 150, 'color': '#ffffff', 'opacity': 0.4, 'width': 1 },
+            'move': { 'enable': true, 'speed': 3, 'direction': 'none', 'random': false, 'straight': false, 'out_mode': 'out', 'bounce': false }
+        },
+        'interactivity': {
+            'detect_on': 'canvas',
+            'events': {
+                'onhover': { 'enable': true, 'mode': 'repulse' },
+                'onclick': { 'enable': true, 'mode': 'push' },
+                'resize': true
+            },
+            'modes': {
+                'repulse': { 'distance': 100, 'duration': 0.4 },
+                'push': { 'particles_nb': 4 }
+            }
+        },
+        'retina_detect': true
+    });
+</script>
 {% endblock %}

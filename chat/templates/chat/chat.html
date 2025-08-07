@@ -2,29 +2,35 @@
 {% load static %}
 
 {% block css %}
-<link rel="stylesheet" href="{% static 'chat/css/chat.css' %}"> <!-- Link to your custom chatbot CSS -->
+<link rel="stylesheet" href="{% static 'chat/css/chat.css' %}">
 {% endblock %}
 
 {% block content %}
 
-    
-    <div class="chatbot-messages mt-2 mb-4 " id="chatbot-messages">
-       <div class="d-flex wh-100 row">
-            <img src="{% static "index/img/cheatboaticon.gif" %}" alt="MyBoat icon" class="col-2 myboat-icon">
-            <div class="message bot-message col-10">Hello! How can I assist you today?</div>
-        </div> 
-    </div>
-    
-    <div class="chatbot-input">
-        <div class="w-100">
-        <input type="text" id="user-input" placeholder="Type your message..." onkeypress="handleKeyPress(event)">
-        <button id="send-button" onclick="sendMessage()">Send</button>
+<div class="container mx-auto px-4">
+    <div class="chatbot-card dark-theme-card flex flex-col h-screen max-h-[90vh]">
+
+        <div class="chatbot-messages flex-grow p-6 overflow-y-auto space-y-4" id="chatbot-messages">
+            <div class="flex items-start gap-3">
+                <img src="{% static "index/img/cheatboaticon.gif" %}" alt="MyBoat icon" class="w-10 h-10 flex-shrink-0 rounded-full">
+                <div class="message bot-message p-3 rounded-lg text-white shadow-md">Hello! How can I assist you today?</div>
+            </div>
         </div>
-        <p class="m-auto mt-3">My chatbot is still under development, so it may occasionally make mistakes.</p>
+
+         <div class="chatbot-input-container p-6 border dark-theme-border flex-shrink-0 rounded-xl">
+            <div class="flex items-center gap-4">
+                <input type="text" id="user-input" placeholder="Type your message..." class="flex-grow p-3 rounded-full dark-theme-input text-gray-200 focus:outline-none focus:border-cyan-400 transition-colors duration-300" onkeypress="handleKeyPress(event)">
+                <button id="send-button" onclick="sendMessage()" class="send-button bg-cyan-600 text-white font-semibold py-3 px-6 rounded-full transition-all duration-300 hover:bg-cyan-500 hover:shadow-lg">
+                    Send
+                </button>
+            </div>
+            <p class="text-gray-500 text-xs mt-3 text-center">My chatbot is still under development, so it may occasionally make mistakes.</p>
+        </div>
     </div>
+</div>
 
 {% endblock %}
 
 {% block js %}
-<script src="{% static 'chat/js/chat.js' %}"></script> <!-- Link to your custom chatbot JS -->
+<script src="{% static 'chat/js/chat.js' %}"></script>
 {% endblock %}
