@@ -20,13 +20,6 @@
     max-width: 80%;
 }
 
-.bot-message {
-    background-color: #2d3748; /* Dark gray for bot message bubbles */
-    color: white;
-    border-top-left-radius: 0.5rem;
-    border-top-right-radius: 0.5rem;
-    border-bottom-right-radius: 0.5rem;
-}
 
 .user-message {
     align-self: flex-end;
