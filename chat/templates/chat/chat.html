@@ -6,7 +6,6 @@
 {% endblock %}
 
 {% block content %}
-
 <div class="container mx-auto px-4">
     <div class="chatbot-card dark-theme-card flex flex-col h-screen max-h-[90vh]">
 
@@ -17,12 +16,22 @@
             </div>
         </div>
 
-         <div class="chatbot-input-container p-6 border dark-theme-border flex-shrink-0 rounded-xl">
+        <div class="chatbot-input-container p-6 border dark-theme-border flex-shrink-0 rounded-xl">
             <div class="flex items-center gap-4">
                 <input type="text" id="user-input" placeholder="Type your message..." class="flex-grow p-3 rounded-full dark-theme-input text-gray-200 focus:outline-none focus:border-cyan-400 transition-colors duration-300" onkeypress="handleKeyPress(event)">
-                <button id="send-button" onclick="sendMessage()" class="send-button bg-cyan-600 text-white font-semibold py-3 px-6 rounded-full transition-all duration-300 hover:bg-cyan-500 hover:shadow-lg">
-                    Send
-                </button>
+                
+                <div class="relative w-12 h-12 flex items-center justify-center">
+                    <button id="send-button" onclick="sendMessage()" class="send-button absolute top-0 left-0 w-full h-full flex items-center justify-center bg-cyan-600 text-white rounded-full transition-all duration-300 hover:bg-cyan-500 hover:shadow-lg">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="22" y1="2" x2="11" y2="13"></line>
+                            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                        </svg>
+                    </button>
+                    
+                    <div id="input-loading" class="absolute top-2 left-0 w-full h-full hidden items-center justify-center">
+                        <div class="border-4 border-t-4 border-gray-200 border-t-cyan-500 rounded-full w-8 h-8 animate-spin"></div>
+                    </div>
+                </div>
             </div>
             <p class="text-gray-500 text-xs mt-3 text-center">My chatbot is still under development, so it may occasionally make mistakes.</p>
         </div>
@@ -32,5 +41,6 @@
 {% endblock %}
 
 {% block js %}
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <script src="{% static 'chat/js/chat.js' %}"></script>
 {% endblock %}

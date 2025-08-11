@@ -24,12 +24,14 @@ def cheatapi(request):
         if request.method == "POST":
             data = json.loads(request.body)
             message = data.get('message')
+            thread_id = data.get('thread_id')
+
 
 
             # Chat with the bot
 
             config = {
-                "configurable":{"thread_id":"1"}
+                "configurable":{"thread_id":str(thread_id)}
             }
             response=main_graph.invoke(
                 {"messages": message},

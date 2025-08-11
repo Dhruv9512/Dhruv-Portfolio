@@ -1,4 +1,4 @@
-/* chat/css/chat.css */
+/* chat/css/chat.css */ 
 
 .dark-theme-input {
     background-color: #2d3748;
@@ -15,11 +15,9 @@
     display: none;
 }
 
-
 .message {
     max-width: 80%;
 }
-
 
 .user-message {
     align-self: flex-end;
@@ -44,4 +42,36 @@
 @keyframes pulse {
     0%, 100% { opacity: 1; }
     50% { opacity: 0.5; }
+}
+
+/* --- Responsive Adjustments --- */
+@media (max-width: 768px) {
+    .chatbot-card {
+        height: 100vh;
+        max-height: 100vh; 
+    }
+    .chatbot-messages {
+        padding: 1rem;
+    }
+    .chatbot-input-container {
+        padding: 1rem;
+    }
+    .chatbot-input-container p {
+        font-size: 0.75rem;
+    }
+    #user-input {
+        font-size: 0.875rem;
+        padding: 0.75rem;
+    }
+    
+    .message {
+        font-size: 0.875rem;
+        padding: 0.5rem 0.75rem;
+    }
+    
+    /* Make icon small on small screen */
+    .chatbot-messages .flex .flex-shrink-0 {
+        width: 2rem; /* 32px */
+        height: 2rem; /* 32px */
+    }
 }

@@ -10,9 +10,13 @@
 
     <div class="project-card rounded-3xl flex flex-col">
         
-        <div class="p-6 flex items-center justify-center">
-            <img src="{{ Data.work.Work_Image }}" alt="My work image" class="seemywork-img rounded-xl w-full">
-        </div>
+       <div class="p-6 flex items-center justify-center iframe-container">
+            {% if Data.website_link == "https://NULL.com" %}
+                <img src="{{ Data.work.Work_Image }}" alt="My work image" class="seemywork-img rounded-xl w-full">
+            {% else %}
+                    <iframe src="{{ Data.website_link }}"></iframe>
+            {% endif %}
+        </div> 
 
         <div class="p-6 flex flex-col justify-center">
             <h4 class="text-3xl md:text-4xl font-extrabold text-white mb-4">{{ Data.work.title }}</h4>

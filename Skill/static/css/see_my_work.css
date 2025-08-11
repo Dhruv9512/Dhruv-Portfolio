@@ -6,6 +6,19 @@
     object-fit: contain; 
 }
 
+
+.iframe-container {
+    width: 100%; /* Or your desired width */
+    height: 450px; /* Set a fixed height for the container */
+    overflow: hidden; /* Hides any content that overflows the container */
+}
+
+iframe {
+    width: 100%; /* Iframe needs a default size to be scaled */
+    height: 200%;
+    border: none;
+    transform: scale(0.5); 
+}
 .btn-link {
     display: inline-flex;
     align-items: center;

@@ -10,7 +10,7 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.messages import SystemMessage
 from langgraph.checkpoint.memory import MemorySaver
 import nest_asyncio
-
+import re
 
 nest_asyncio.apply()
 load_dotenv()
@@ -67,16 +67,28 @@ def extract_categories_with_gemini(query: str) -> list[str]:
     ]
 
     prompt = f"""
-You are a semantic classifier for Dhruv Sharma's portfolio. 
-Given this query: "{query}", return all relevant categories from this list:
+You are a semantic category classifier for Dhruv Sharma's portfolio.
 
+Given the user query: "{query}", identify all relevant categories from the list below.
 {categories_list}
 
+Categories and their meanings:
+1. "about me" → Personal background, biography, age, location, address, contact information, hometown, hobbies, interests, or any general personal details.
+2. "certification" → Academic or professional certificates, completed courses, and awarded credentials.
+3. "education_marks_academic" → Academic history, schools, colleges, degrees, grades, percentages, CGPA, and other academic achievements.
+4. "resume" → Career summary, complete CV, or a document outlining qualifications and experience.
+5. "skill" → Technical skills, soft skills, tools, languages, and areas of expertise.
+6. "Work_Experience_and_Internships" → Past jobs, roles, companies, work history, professional positions, and internships.
+7. "projectwork" → Academic, personal, or professional projects, case studies, portfolios, and hands-on work.
+
 Your task:
-- Analyze the query carefully.
-- Return a valid Python list (e.g., ["projectwork", "education_marks_academic"]) containing ALL matching categories.
-- Only include categories from the provided list. No made-up categories.
-- No explanations, no formatting, no markdown.
+- Carefully interpret the query's intent, even if the words are different from the category names.
+- Map synonyms, paraphrases, and indirect requests to the most relevant category or categories.
+- If a query spans multiple categories, return all of them.
+- Do not make up new categories — only choose from the list above.
+- Output must be a valid Python list of strings (e.g., ["about me", "skill"]).
+- Do not output explanations, markdown, or extra text — only the list.
+
 
 Only return a valid Python list of strings as plain text.
 """
@@ -123,21 +135,21 @@ def qdrant_rag_tool(query: str) -> str:
     Returns:
         str: The most relevant content retrieved from the portfolio vector store.
     """
-
     from langchain_qdrant import QdrantVectorStore
 
     logger.info(f"User query: {query}")
     qdrant_client = get_qdrant_client()
     embedder = get_embedder()
 
+    # Step 1 — Classify query into portfolio categories
     categories = extract_categories_with_gemini(query)
-    logger.info(f"Resolved categories: {categories}")
+    logger.info(f"Matched categories: {categories}")
 
     if not categories:
-        return "No matching category found. Please rephrase your query."
+        return "No matching category found in Dhruv Sharma's portfolio."
 
-    results = []
-
+    # Step 2 — Retrieve all context chunks across all categories
+    all_context = []
     for collection in categories:
         try:
             qdrant = QdrantVectorStore(
@@ -148,22 +160,55 @@ def qdrant_rag_tool(query: str) -> str:
 
             retriever = qdrant.as_retriever(
                 search_type="mmr",
-                search_kwargs={"k": 5, "fetch_k": 20, "lambda_mult": 0.5}
+                search_kwargs={"k": 8, "fetch_k": 30, "lambda_mult": 0.5}  # Fetch more to avoid missing details
             )
 
             docs = retriever.invoke(query)
-            context = [doc.page_content for doc in docs if doc.page_content.strip()]
-            if context:
-                results.append(f"📁 **{collection}**:\n" + "\n".join(context))
+            for doc in docs:
+                if doc.page_content.strip():
+                    all_context.append(doc.page_content.strip())
 
         except Exception as e:
-            logger.error(f"Error retrieving from collection '{collection}': {e}")
-            continue
+            logger.error(f"Error retrieving from {collection}: {e}")
 
-    if not results:
-        return "No relevant information found in any matching category."
+    if not all_context:
+        return "No relevant information found in Dhruv Sharma's portfolio."
 
-    return "\n\n---\n\n".join(results)
+    # Step 3 — Merge all chunks into one string
+    combined_context = "\n\n".join(set(all_context))  # set() removes duplicates
+
+    # Step 4 — Create filter prompt for detailed synthesis
+    filter_prompt = f"""
+You are a precise and comprehensive answer generator for Dhruv Sharma's portfolio data.
+
+Question:
+{query}
+
+Retrieved Portfolio Data:
+{combined_context}
+
+Instructions:
+1. Identify ALL pieces of information in the provided text that relate to the question.
+2. Merge them into a **single, complete, and self-contained** answer.
+3. Preserve every relevant fact — do not omit technical details, responsibilities, or context.
+4. If the question asks for a "current" project or role:
+   - Return only the single most recent and ongoing project.
+   - Do not mention past, completed, or inactive projects.
+5. **When including URLs, copy them EXACTLY as they appear in Retrieved Portfolio Data without changing, shortening, or reformatting them.**
+6. Do not generate or guess any URLs.
+7. Keep tone professional and clear.
+8. Never return "No information" unless truly nothing relevant exists.
+
+Return ONLY the final combined answer.
+"""
+
+
+
+    # Step 5 — Ask LLM to merge & format
+    llm = get_gemini_llm()
+    answer = llm.invoke(filter_prompt).content
+
+    return answer
 
 # --- Tool Binding --- #
 tools = [qdrant_rag_tool]
@@ -176,11 +221,16 @@ You are the official assistant of Dhruv Sharma.
 
 If the user tells you their name, remember it and refer to them by that name in future responses. Engage in friendly, conversational replies while staying professional.
 
-You MUST ALWAYS send every Dhruv Sharma-related question to the qdrant_rag_tool tool to retrieve the answer.
+IMPORTANT:
+- For EVERY question that is about Dhruv Sharma (including any mention of "Dhruv Sharma", "you" meaning him, or any detail from his portfolio), you MUST call the `qdrant_rag_tool` to retrieve information BEFORE answering.
+- Never skip the RAG step, even if you think you already know the answer.
+- Do not answer from memory without first retrieving from the portfolio knowledge base.
 
 Your primary responsibility is to answer questions about Dhruv Sharma — including his marks, education, projects, experience, or personal/professional background.
 
-If the user refers to "you", interpret it as referring to Dhruv Sharma — not yourself.
+If the user's question is about Dhruv Sharma and they refer to "you", interpret "you" as Dhruv Sharma.
+
+If the user's message is casual conversation or unrelated to Dhruv Sharma, treat "you" as yourself (the assistant).
 
 If no relevant information is found from the portfolio, respond:
 "No information about that was found in Dhruv Sharma's portfolio."
@@ -191,77 +241,163 @@ If the user asks something unrelated to Dhruv Sharma, respond with:
 Remain concise, helpful, polite, and always stay on topic.
 """
 
+
 # --- LLM Tool Node --- #
+def rewrite_query_with_context(state: State) -> str:
+    logger.info("rewrite_query_with_context called")
+
+    def get_role(msg):
+        if hasattr(msg, "type"):
+            return msg.type  # LangChain message object
+        elif isinstance(msg, dict):
+            return msg.get("role", "")
+        return ""
+
+    def get_content(msg):
+        if hasattr(msg, "content"):
+            return msg.content  # LangChain message object
+        elif isinstance(msg, dict):
+            return msg.get("content", "")
+        return ""
+
+    # Build history text
+    history_text = "\n".join(
+        [f"{get_role(msg).capitalize()}: {get_content(msg)}" for msg in state["messages"]]
+    )
+
+    latest_query = state["messages"][-1].content
+
+    prompt = f"""
+You are a query rewriter for Dhruv Sharma's portfolio chatbot.
+
+Conversation so far:
+{history_text}
+
+User's latest question:
+"{latest_query}"
+
+Rules:
+- Rewrite the question so it is fully self-contained.
+- Replace vague references like "it", "this", "that", "he" with the exact thing/person they refer to.
+- If the question is related to Dhruv Sharma, explicitly include the phrase "Dhruv Sharma" in the rewritten query.
+- Keep the rewritten question short, clear, and focused.
+- Do not change the meaning.
+
+Return ONLY the rewritten query as plain text.
+"""
+
+    groq_llm = get_groq_llm()
+    rewritten_query = groq_llm.invoke(prompt)
+
+    logger.info(f"The rewrite is: {rewritten_query}")
+
+    return rewritten_query.content
+
+
+    
 def run_llm_with_tools(state: State):
+    # Rewrite latest query in place
+    state["messages"][-1].content =  rewrite_query_with_context(state)
+
     messages = state["messages"]
     system_msg = SystemMessage(content=system_prompt)
     all_messages = [system_msg] + messages
 
+    # Get the latest user query content
     current_user_msg = messages[-1].content if messages else ""
 
+    # Check for repeated questions
     for i in range(len(messages) - 2):
-        if messages[i].type == "human" and messages[i].content.strip().lower() == current_user_msg.strip().lower():
+        if (
+            messages[i].type == "human"
+            and messages[i].content.strip().lower() == current_user_msg.strip().lower()
+        ):
             for j in range(i + 1, len(messages)):
                 if messages[j].type == "ai":
-                    logger.info("✅ Repeated question detected. Returning cached formatted response.")
-                    return {"messages": [messages[j+2].content]}
+                    logger.info(f"✅ Repeated question detected. Returning cached formatted response: {messages[j].content}")
+                    return {"messages": [messages[j].content]}  # don't do j+1
 
+    logger.info(f"🔍 Query after rewrite: {state['messages'][-1].content}")
+
+    # If no cache hit, run LLM
     result = llm.invoke(all_messages)
     logger.info(f"LLM response: {result}")
     return {"messages": [result]}
 
+
 # --- Formatter Node --- #
+
 def format_response(state: State):
     llm = get_gemini_llm()
+
+    # Extract links from raw_answer exactly as stored
+    raw_answer = state['messages'][-1].content
+    links = re.findall(r'\[([^\]]+)\]\((https?://[^\)]+)\)', raw_answer)
+
+    # Remove links from the answer before sending to LLM
+    answer_without_links = re.sub(r'\[([^\]]+)\]\((https?://[^\)]+)\)', r'\1', raw_answer)
+
     human_prompt = """
 You are Dhruv Sharma’s AI assistant.
 
 Your job is to format answers for end users. You're given:
 - The user's question
-- An initial (raw) answer generated by an internal system (RAG)
+- A processed version of the initial (raw) answer without any links
+- The extracted links (handled separately — do not rewrite them)
 
 Your task is to:
-- Format the answer if it is related to Dhruv Sharma (his education, projects, experience, skills, achievements, or background).
+- Format the answer in clean, well-structured **Markdown** if it is related to Dhruv Sharma (his education, projects, experience, skills, achievements, or background).
 - Refuse to answer general knowledge or unrelated questions (e.g., capitals of countries, weather, trivia).
 
 ### Guidelines:
-1. Only output a **final, polished response** suitable for the user — do **not** include or refer to the original raw content.
+1. Only output a **final, polished Markdown response** suitable for the user — do **not** include or refer to the original raw content.
 2. Use a professional, helpful, and clear tone.
-3. If any links are present, extract and move them to a **🔗 Links** section at the end, using markdown format.
-4. Do not include technical metadata, IDs, or debugging information.
-5. Never mention "raw answer", "RAG", or "retrieved documents".
+3. Present information using Markdown best practices:
+   - Use **bold** for key terms or headings.
+   - Use bullet points (`-`) or numbered lists for multiple items.
+   - Use `###` for section headers (e.g., **Education**, **Projects**, **Skills**).
+   - Use tables for structured data when appropriate.
+4. **Do NOT invent or change any links** — these will be appended after your output.
+5. Do not include technical metadata, IDs, or debugging information.
+6. Never mention "raw answer", "RAG", or "retrieved documents".
 
 ---
 
 **User Question:**  
 {question}
 
-**Initial Answer (for internal use only):**  
-{raw_answer}
+**Initial Answer (links removed):**  
+{answer_without_links}
 
 ---
 
-✅ Now write the **final response** to show to the user, starting below this line:
-
+✅ Now write the **final response** to show to the user in clean Markdown format (without links). Do not include a links section — it will be added automatically.
 Formatted Response:
 """
 
     prompt = ChatPromptTemplate.from_template(human_prompt)
     chain = prompt | llm
 
-    question = SystemMessage(content=system_prompt) + state['messages'][0].content
-    raw_answer = state['messages'][-1].content
+    question = state['messages'][0].content  # Original user question
 
     logger.info(f" raw_answer: {raw_answer}")
 
-    result = chain.invoke({
+    # Get LLM response without links
+    formatted_text = chain.invoke({
         "question": question,
-        "raw_answer": raw_answer
-    })
+        "answer_without_links": answer_without_links
+    }).content
 
-    logger.info(f"✅ Final response formatted successfully: {result}")
+    # Append links in Markdown format exactly as stored
+    if links:
+        formatted_text += "\n\n🔗 **Links**\n"
+        for title, url in links:
+            formatted_text += f"- [{title}]({url})\n"
 
-    return {"messages": [result]}
+    logger.info(f"✅ Final response formatted successfully: {formatted_text}")
+
+    return {"messages": [formatted_text]}
+
 
 # --- Graph --- #
 graph = StateGraph(State)
