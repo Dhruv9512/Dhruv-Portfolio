@@ -191,9 +191,11 @@ Instructions:
 1. Identify ALL pieces of information in the provided text that relate to the question.
 2. Merge them into a **single, complete, and self-contained** answer.
 3. Preserve every relevant fact — do not omit technical details, responsibilities, or context.
-4. If the question asks for a "current" project or role:
-   - Return only the single most recent and ongoing project.
+4. If and only if the question explicitly contains words like "current", "latest", "recent", or "main" when referring to a project or role:
+   - Return only the single most recent and ongoing project or role.
    - Do not mention past, completed, or inactive projects.
+   Otherwise:
+   - List **all** relevant projects or roles from the portfolio, including past, completed, and ongoing ones.
 5. **When including URLs, copy them EXACTLY as they appear in Retrieved Portfolio Data without changing, shortening, or reformatting them.**
 6. Do not generate or guess any URLs.
 7. Keep tone professional and clear.
@@ -201,6 +203,7 @@ Instructions:
 
 Return ONLY the final combined answer.
 """
+
 
 
 
