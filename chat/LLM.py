@@ -242,60 +242,63 @@ Remain concise, helpful, polite, and always stay on topic.
 
 
 # --- LLM Tool Node --- #
-def rewrite_query_with_context(state: State) -> str:
-    logger.info("rewrite_query_with_context called")
+# def rewrite_query_with_context(state: State) -> str:
+#     logger.info("rewrite_query_with_context called")
 
-    def get_role(msg):
-        if hasattr(msg, "type"):
-            return msg.type  # LangChain message object
-        elif isinstance(msg, dict):
-            return msg.get("role", "")
-        return ""
+#     def get_role(msg):
+#         if hasattr(msg, "type"):
+#             return msg.type  # LangChain message object
+#         elif isinstance(msg, dict):
+#             return msg.get("role", "")
+#         return ""
 
-    def get_content(msg):
-        if hasattr(msg, "content"):
-            return msg.content  # LangChain message object
-        elif isinstance(msg, dict):
-            return msg.get("content", "")
-        return ""
+#     def get_content(msg):
+#         if hasattr(msg, "content"):
+#             return msg.content  # LangChain message object
+#         elif isinstance(msg, dict):
+#             return msg.get("content", "")
+#         return ""
 
-    # Build history text
-    history_text = "\n".join(
-        [f"{get_role(msg).capitalize()}: {get_content(msg)}" for msg in state["messages"]]
-    )
+#     # Build history text
+#     history_text = "\n".join(
+#         [f"{get_role(msg).capitalize()}: {get_content(msg)}" for msg in state["messages"]]
+#     )
 
-    latest_query = state["messages"][-1].content
-    prompt = f"""
-You are a query rewriter for Dhruv Sharma's portfolio chatbot.
-When the user asks about you, Luffy, or uses "you" referring to the assistant, answer as Luffy with friendly, conversational replies.
+#     latest_query = state["messages"][-1].content
+#     prompt = f"""
+# You are a query rewriter for Dhruv Sharma's portfolio chatbot.
+
+# Conversation so far:  
+# {history_text}
+
+# User's latest question:  
+# "{latest_query}"
+ 
+# - Do NOT add, remove, or change any words, except replace vague pronouns like "it", "this", "that", "he", "she", "they" with the exact thing or person they refer to.
+# - Do NOT change the meaning or introduce new information, references, or entities.
+# - Only replace vague pronouns. If the query does not contain vague pronouns, return it exactly as is.
+# - Do NOT change any proper nouns or specific names.
+# - Return only the rewritten query with no extra text.
+
+# Only do exactly what is mentioned above. Do not add, remove, or alter anything else.
 
 
-Conversation so far:
-{history_text}
 
-User's latest question:
-"{latest_query}"
-
-Rules:
-- Do NOT add or remove any words.
-- Do NOT change the meaning.
-- Only replace vague references like "it", "this", "that", "he" with the exact thing/person they refer to.
-Return only the rewritten query:
-"""
+# """
 
 
-    groq_llm = get_groq_llm()
-    rewritten_query = groq_llm.invoke(prompt)
+#     groq_llm = get_groq_llm()
+#     rewritten_query = groq_llm.invoke(prompt)
 
-    logger.info(f"The rewrite is: {rewritten_query}")
+#     logger.info(f"The rewrite is: {rewritten_query}")
 
-    return rewritten_query.content
+#     return rewritten_query.content
 
 
     
 def run_llm_with_tools(state: State):
     # Rewrite latest query in place
-    state["messages"][-1].content =  rewrite_query_with_context(state)
+    # state["messages"][-1].content =  rewrite_query_with_context(state)
 
     messages = state["messages"]
     system_msg = SystemMessage(content=system_prompt)
