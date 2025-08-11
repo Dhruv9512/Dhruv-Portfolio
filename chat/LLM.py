@@ -191,18 +191,17 @@ Instructions:
 1. Identify ALL pieces of information in the provided text that relate to the question.
 2. Merge them into a **single, complete, and self-contained** answer.
 3. Preserve every relevant fact — do not omit technical details, responsibilities, or context.
-4. If and only if the question explicitly contains words like "current", "latest", "recent", or "main" when referring to a project or role:
-   - Return only the single most recent and ongoing project or role.
-   - Do not mention past, completed, or inactive projects.
-   Otherwise:
-   - List **all** relevant projects or roles from the portfolio, including past, completed, and ongoing ones.
-5. **When including URLs, copy them EXACTLY as they appear in Retrieved Portfolio Data without changing, shortening, or reformatting them.**
-6. Do not generate or guess any URLs.
-7. Keep tone professional and clear.
-8. Never return "No information" unless truly nothing relevant exists.
+4. Never describe anything as "current", "latest", "recent", "ongoing", or "main" unless the retrieved data explicitly states it.
+   - If the data does not explicitly mark something as current, present it neutrally (e.g., "Dhruv Sharma has worked on..." or "Projects include...").
+5. Always include **all relevant items** from the data, even if the user’s question asks for "current", "latest", "recent", or "main".
+6. **When including URLs, copy them EXACTLY as they appear in Retrieved Portfolio Data without changing, shortening, or reformatting them.**
+7. Do not generate or guess any URLs.
+8. Keep tone professional and clear.
+9. Never return "No information" unless truly nothing relevant exists.
 
 Return ONLY the final combined answer.
 """
+
 
 
 
@@ -220,20 +219,18 @@ llm = get_groq_llm().bind_tools(tools=tools)
 
 # --- System Prompt --- #
 system_prompt = """
-You are the official assistant of Dhruv Sharma.
+You are the official assistant of Dhruv Sharma and your name is "Luffy" from one piece anime.
 
 If the user tells you their name, remember it and refer to them by that name in future responses. Engage in friendly, conversational replies while staying professional.
+
+When the user asks about you, Luffy, or uses "you" referring to the assistant, answer as Luffy with friendly, conversational replies.
+
+Your primary responsibility is to answer questions about Dhruv Sharma — including his marks, education, projects, experience, or personal/professional background.
 
 IMPORTANT:
 - For EVERY question that is about Dhruv Sharma (including any mention of "Dhruv Sharma", "you" meaning him, or any detail from his portfolio), you MUST call the `qdrant_rag_tool` to retrieve information BEFORE answering.
 - Never skip the RAG step, even if you think you already know the answer.
 - Do not answer from memory without first retrieving from the portfolio knowledge base.
-
-Your primary responsibility is to answer questions about Dhruv Sharma — including his marks, education, projects, experience, or personal/professional background.
-
-If the user's question is about Dhruv Sharma and they refer to "you", interpret "you" as Dhruv Sharma.
-
-If the user's message is casual conversation or unrelated to Dhruv Sharma, treat "you" as yourself (the assistant).
 
 If no relevant information is found from the portfolio, respond:
 "No information about that was found in Dhruv Sharma's portfolio."
@@ -269,9 +266,10 @@ def rewrite_query_with_context(state: State) -> str:
     )
 
     latest_query = state["messages"][-1].content
-
     prompt = f"""
 You are a query rewriter for Dhruv Sharma's portfolio chatbot.
+When the user asks about you, Luffy, or uses "you" referring to the assistant, answer as Luffy with friendly, conversational replies.
+
 
 Conversation so far:
 {history_text}
@@ -280,14 +278,12 @@ User's latest question:
 "{latest_query}"
 
 Rules:
-- Rewrite the question so it is fully self-contained.
-- Replace vague references like "it", "this", "that", "he" with the exact thing/person they refer to.
-- If the question is related to Dhruv Sharma, explicitly include the phrase "Dhruv Sharma" in the rewritten query.
-- Keep the rewritten question short, clear, and focused.
-- Do not change the meaning.
-
-Return ONLY the rewritten query as plain text.
+- Do NOT add or remove any words.
+- Do NOT change the meaning.
+- Only replace vague references like "it", "this", "that", "he" with the exact thing/person they refer to.
+Return only the rewritten query:
 """
+
 
     groq_llm = get_groq_llm()
     rewritten_query = groq_llm.invoke(prompt)
@@ -331,38 +327,42 @@ def run_llm_with_tools(state: State):
 # --- Formatter Node --- #
 
 def format_response(state: State):
+    """
+    Formats the latest message in `state` into clean Markdown.
+    Always formats the content — no filtering, no bypass.
+    """
     llm = get_gemini_llm()
 
-    # Extract links from raw_answer exactly as stored
+    # Get raw answer from last message
     raw_answer = state['messages'][-1].content
+    question = state['messages'][0].content  # First message = user question
+
+    # Extract links from raw_answer
     links = re.findall(r'\[([^\]]+)\]\((https?://[^\)]+)\)', raw_answer)
 
-    # Remove links from the answer before sending to LLM
-    answer_without_links = re.sub(r'\[([^\]]+)\]\((https?://[^\)]+)\)', r'\1', raw_answer)
+    # Remove links from the text (replace [title](url) → title)
+    answer_without_links = re.sub(
+        r'\[([^\]]+)\]\((https?://[^\)]+)\)', r'\1', raw_answer
+    )
 
+    # Markdown formatting prompt
     human_prompt = """
 You are Dhruv Sharma’s AI assistant.
 
-Your job is to format answers for end users. You're given:
-- The user's question
-- A processed version of the initial (raw) answer without any links
-- The extracted links (handled separately — do not rewrite them)
+You are given:
+- The user's **question**
+- The initial answer with links removed
 
-Your task is to:
-- Format the answer in clean, well-structured **Markdown** if it is related to Dhruv Sharma (his education, projects, experience, skills, achievements, or background).
-- Refuse to answer general knowledge or unrelated questions (e.g., capitals of countries, weather, trivia).
+Your task:
+- Return a **clean, polished Markdown response** suitable for display.
+- Use professional, clear language.
+- Apply Markdown best practices:
+  - **Bold** for key terms or headings
+  - Bullet points for lists
+  - `###` for section headers
+  - Tables for structured data
 
-### Guidelines:
-1. Only output a **final, polished Markdown response** suitable for the user — do **not** include or refer to the original raw content.
-2. Use a professional, helpful, and clear tone.
-3. Present information using Markdown best practices:
-   - Use **bold** for key terms or headings.
-   - Use bullet points (`-`) or numbered lists for multiple items.
-   - Use `###` for section headers (e.g., **Education**, **Projects**, **Skills**).
-   - Use tables for structured data when appropriate.
-4. **Do NOT invent or change any links** — these will be appended after your output.
-5. Do not include technical metadata, IDs, or debugging information.
-6. Never mention "raw answer", "RAG", or "retrieved documents".
+Do **not** add or modify links — they will be appended after.
 
 ---
 
@@ -374,33 +374,26 @@ Your task is to:
 
 ---
 
-✅ Now write the **final response** to show to the user in clean Markdown format (without links). Do not include a links section — it will be added automatically.
+✅ Write the final response in Markdown (without links).
 Formatted Response:
 """
-
     prompt = ChatPromptTemplate.from_template(human_prompt)
     chain = prompt | llm
 
-    question = state['messages'][0].content  # Original user question
-
-    logger.info(f" raw_answer: {raw_answer}")
-
-    # Get LLM response without links
+    # Generate formatted Markdown
     formatted_text = chain.invoke({
         "question": question,
         "answer_without_links": answer_without_links
     }).content
 
-    # Append links in Markdown format exactly as stored
+    # Append extracted links at the end in Markdown
     if links:
         formatted_text += "\n\n🔗 **Links**\n"
         for title, url in links:
             formatted_text += f"- [{title}]({url})\n"
 
-    logger.info(f"✅ Final response formatted successfully: {formatted_text}")
-
+    logger.info("✅ Final Markdown response formatted.")
     return {"messages": [formatted_text]}
-
 
 # --- Graph --- #
 graph = StateGraph(State)
