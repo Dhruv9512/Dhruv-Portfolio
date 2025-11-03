@@ -1,12 +1,11 @@
 import os
 import json
 import requests
-from django.http import JsonResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 from dotenv import load_dotenv
 from .LLM import main_graph
-from langchain.schema import HumanMessage
 
 
 # Load environment variables
@@ -42,3 +41,4 @@ def cheatapi(request):
     except Exception as error:
         print("Error:", error)  
         return JsonResponse({'error': str(error)})
+

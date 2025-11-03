@@ -1,77 +1,162 @@
-/* chat/css/chat.css */ 
+/* chat/css/chat.css */
 
-.dark-theme-input {
-    background-color: #2d3748;
-    border: 1px solid #4a5568;
-}
-
+/* --- Base & Layout Styles --- */
 .chatbot-messages {
-    max-height: 100%;
-    overflow-y: auto;
+  max-height: 100%;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch; /* For smooth scrolling on iOS */
+  border: none; /* Explicitly remove border */
+  box-shadow: none; /* Explicitly remove box-shadow */
 }
 
-/* Custom scrollbar for a better dark-theme look */
 .chatbot-messages::-webkit-scrollbar {
-    display: none;
+  display: none; /* Hide scrollbar for a cleaner look */
 }
 
 .message {
-    max-width: 80%;
+  max-width: 85%;
+  word-wrap: break-word;
+  line-height: 1.6;
+  border: none; /* Explicitly remove border */
+  box-shadow: none; /* Explicitly remove box-shadow */
+}
+
+/* --- Color Theme --- */
+.dark-theme-input {
+  background-color: #2d3748;
+  border: 1px solid #4a5568; /* Keeping the border for the input field */
 }
 
 .user-message {
-    align-self: flex-end;
-    background-color: #0d9488; /* Vibrant cyan for user message bubbles */
-    color: white;
-    border-top-left-radius: 0.5rem;
-    border-top-right-radius: 0.5rem;
-    border-bottom-left-radius: 0.5rem;
-}
-
-.loading-indicator {
-    display: flex;
-    align-items: center;
+  align-self: flex-end;
+  background-color: #0d9488; /* Vibrant cyan for user */
+  color: white;
+  border-radius: 0.5rem 0.5rem 0 0.5rem;
 }
 
 .loading-indicator .message {
-    background-color: #2d3748;
-    color: white;
-    animation: pulse 1s infinite;
+  background-color: #2d3748;
+  color: white;
+  animation: pulse 1.5s infinite;
 }
 
 @keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.5; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
 }
 
-/* --- Responsive Adjustments --- */
-@media (max-width: 768px) {
-    .chatbot-card {
-        height: 100vh;
-        max-height: 100vh; 
-    }
-    .chatbot-messages {
-        padding: 1rem;
-    }
-    .chatbot-input-container {
-        padding: 1rem;
-    }
-    .chatbot-input-container p {
-        font-size: 0.75rem;
-    }
-    #user-input {
-        font-size: 0.875rem;
-        padding: 0.75rem;
-    }
-    
-    .message {
-        font-size: 0.875rem;
-        padding: 0.5rem 0.75rem;
-    }
-    
-    /* Make icon small on small screen */
-    .chatbot-messages .flex .flex-shrink-0 {
-        width: 2rem; /* 32px */
-        height: 2rem; /* 32px */
-    }
+/* --- Dynamic Typography & Content Styling --- */
+.bot-message h3,
+.bot-message h4 {
+  /* Fluid font size: scales smoothly between 1.1rem and 1.4rem */
+  font-size: clamp(1.1rem, 4vw, 1.4rem);
+  font-weight: 700;
+  margin-top: 1.25em;
+  margin-bottom: 0.75em;
+  padding-bottom: 0.25em;
+  border-bottom: 2px solid #e2e8f0; /* Kept the underline effect for headers */
+}
+
+.bot-message ul {
+  list-style-type: disc;
+  margin: 0.5em 0 0.5em 1.5em;
+  padding-left: 1em;
+}
+
+.bot-message li {
+  margin-bottom: 0.25em;
+}
+
+/* --- Links & Buttons --- */
+/* This style now targets the button class from the renderer */
+.chat-link.btn-primary {
+  display: inline-block;
+  padding: 4px 8px;
+  font-size: 14px;
+  line-height: 1.2;
+  background: #24292e;
+  color: #fff !important;
+  text-decoration: none;
+  border-radius: 4px;
+  font-weight: 600;
+  transition: background-color 0.2s, transform 0.2s;
+  vertical-align: baseline;
+  margin-left: 6px;
+}
+.chat-link.btn-primary:hover {
+  background: #2f363d;
+}
+
+.invalid-link {
+  color: #f87171; /* A slightly softer red for invalid links */
+  font-weight: 500;
+  font-style: italic;
+}
+
+
+
+/* --- Responsive Media Queries --- */
+/* Default styles are mobile-first */
+
+/* Tablet and larger screens */
+@media (min-width: 768px) {
+  .chatbot-messages {
+    padding: 1.5rem;
+  }
+  .message {
+    font-size: 1rem; /* Slightly larger base font for better readability */
+  }
+}
+
+/* Desktop screens */
+@media (min-width: 1024px) {
+  .chatbot-card {
+    max-width: 800px;
+    margin: 0 auto;
+    border-radius: 12px;
+    border: none; /* Explicitly remove border from the main card */
+    box-shadow: none; /* Explicitly remove box-shadow from the main card */
+  }
+}
+
+/* --- ADDED: Send Button Loading Spinner Styles --- */
+
+#send-button.loading {
+  /* Prevent the button's icon/text from showing */
+  color: transparent;
+  /* Required to position the spinner inside */
+  position: relative;
+}
+
+#send-button.loading::after {
+  content: '';
+  position: absolute;
+  /* Center the spinner within the button */
+  top: 50%;
+  left: 50%;
+  /* Define the spinner's size */
+  width: 20px;
+  height: 20px;
+  margin-top: -10px;  /* Half of the height */
+  margin-left: -10px; /* Half of the width */
+
+  /* Spinner visual appearance */
+  border: 4px solid rgba(255, 255, 255, 0.3); /* The 'track' of the spinner */
+  border-top-color: #ffffff; /* The moving part of the spinner */
+  border-radius: 50%;
+
+  /* Animation to make it spin */
+  animation: button-spinner 1s linear infinite;
+}
+
+/* Keyframes for the spinning animation */
+@keyframes button-spinner {
+  to {
+    transform: rotate(360deg);
+  }
 }

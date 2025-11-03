@@ -12,7 +12,7 @@
         <div class="chatbot-messages flex-grow p-6 overflow-y-auto space-y-4" id="chatbot-messages">
             <div class="flex items-start gap-3">
                 <img src="{% static "index/img/cheatboaticon.gif" %}" alt="MyBoat icon" class="w-10 h-10 flex-shrink-0 rounded-full">
-                <div class="message bot-message p-3 rounded-lg text-white shadow-md">Hello! How can I assist you today?</div>
+                <div class="message bot-message p-3 text-white">Hello! How can I assist you today?</div>
             </div>
         </div>
 
@@ -28,7 +28,7 @@
                         </svg>
                     </button>
                     
-                    <div id="input-loading" class="absolute top-2 left-0 w-full h-full hidden items-center justify-center">
+                    <div id="input-loading" class="absolute top-2 left-0 w-full h-full hidden flex items-center justify-center">
                         <div class="border-4 border-t-4 border-gray-200 border-t-cyan-500 rounded-full w-8 h-8 animate-spin"></div>
                     </div>
                 </div>
@@ -41,6 +41,7 @@
 {% endblock %}
 
 {% block js %}
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <script src="{% static 'chat/js/chat.js' %}"></script>
 {% endblock %}
