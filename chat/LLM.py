@@ -47,11 +47,11 @@ def get_gemini_llm():
 
 
 def get_embedder():
-    # from langchain_google_genai import GoogleGenerativeAIEmbeddings
-    # return GoogleGenerativeAIEmbeddings(model="models/embedding-001")
-    from langchain_ollama import OllamaEmbeddings
+    from langchain_google_genai import GoogleGenerativeAIEmbeddings
+    return GoogleGenerativeAIEmbeddings(model="models/embedding-001")
+    # from langchain_ollama import OllamaEmbeddings
 
-    return OllamaEmbeddings(model="nomic-embed-text")
+    # return OllamaEmbeddings(model="nomic-embed-text")
 
 # --- State Type --- #
 class State(TypedDict):
