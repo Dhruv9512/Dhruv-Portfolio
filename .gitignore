@@ -1,5 +1,6 @@
 # Ignore Conda environment
 portfolioenv/
+env/
 
 # Ignore environment variable files
 .env
