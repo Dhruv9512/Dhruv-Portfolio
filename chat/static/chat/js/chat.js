@@ -31,6 +31,7 @@ renderer.link = function (tokenOrHref, title, text) {
   const titleAttr = titleStr ? ` title="${titleStr}"` : "";
   let chosenHref = hrefStr;
 
+  // Logic to clean up Href (kept from your original code)
   if (!isAllowedHref(chosenHref)) {
     const t = toStr(textStr);
     let m = /\[[^\]]+\]\((https?:\/\/[^\s)]+)\)/i.exec(t);
@@ -45,7 +46,9 @@ renderer.link = function (tokenOrHref, title, text) {
   }
 
   if (isAllowedHref(chosenHref)) {
-    return `<a href="${chosenHref}" target="_blank"${titleAttr} data-href="${chosenHref}" class="chat-link btn btn-primary">Visit</a>`;
+    const displayLabel = textStr && textStr.trim() !== "" ? textStr : "Visit";
+    
+    return `<a href="${chosenHref}" target="_blank"${titleAttr} data-href="${chosenHref}" class="chat-link btn btn-primary">${displayLabel}</a>`;
   }
 
   const label = textStr || "Invalid link";
