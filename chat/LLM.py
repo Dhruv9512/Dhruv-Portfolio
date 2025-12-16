@@ -194,7 +194,7 @@ def get_gemini_llm():
 
 def get_embedder():
     if not os.environ.get("HUGGINGFACEHUB_API_TOKEN"): raise ValueError("HUGGINGFACEHUB_API_TOKEN missing.")
-    return HuggingFaceEndpointEmbeddings(model="sentence-transformers/all-mpnet-base-v2")
+    return HuggingFaceEndpointEmbeddings(model="sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2")
 
 def get_qdrant_client():
     return QdrantClient(url=os.getenv("QDRANT_URL"), api_key=os.getenv("QDRANT_API_KEY"))
