@@ -355,7 +355,7 @@ class MyChatbot:
             
             try:
                 analysis_prompt_formatted = analysis_prompt.format(content=last_message.content)
-                response = llm.invoke(analysis_prompt_formatted).content
+                response = await llm.ainvoke(analysis_prompt_formatted).content
                 cleaned_json = strip_one_fence(response)
                 data = json.loads(cleaned_json)
                 
@@ -407,13 +407,13 @@ class MyChatbot:
         
         return {"messages": [AIMessage(content=payload)]}
     # 2. If llm with tool ,call qdrant_rag_tool that give documents from Vector DB
-    def _qdrant_rag_tool(self,query: str) -> str:
+    async def _qdrant_rag_tool(self,query: str) -> str:
         """Searches Dhruv Sharma's portfolio content using vector similarity."""
         
         logger.info(f"User query: {query}")
         
         # Extract the categories of query
-        categories = self._extract_categories_with_gemini(query)
+        categories = await self._extract_categories_with_gemini(query)
         if not categories: return "No matching category found in portfolio."
 
         all_context_docs = []
@@ -424,7 +424,7 @@ class MyChatbot:
                 store = QdrantVectorStore(client=self.qdrantClient, collection_name=collection, embedding=self.embedder)
                 # Increased k to 10 to gather more candidates
                 retriever = store.as_retriever(search_type="mmr", search_kwargs={"k": 10, "fetch_k": 30, "lambda_mult": 0.5})
-                docs = retriever.invoke(query)
+                docs = await retriever.ainvoke(query)
                 all_context_docs.extend(docs)
             except Exception as e:
                 logger.error(f"Error retrieving from {collection}: {e}")
@@ -439,7 +439,7 @@ class MyChatbot:
         try:
             llm_check = self.GroqLLM
             check_prompt = Re_Ranking_Prompt.format(query=query, joined_docs=joined_docs)
-            check_response = llm_check.invoke(check_prompt).content
+            check_response = await llm_check.ainvoke(check_prompt).content
             relevant_ids = [int(num) for num in re.findall(r'\d+', check_response)]
             
             # Filter the docs based on LLM selection
@@ -456,7 +456,7 @@ class MyChatbot:
         
         #---- Final Answer Generation ----
         llm = self.GroqLLM
-        answer = llm.invoke(FILTER_PROMPT_TEMPLATE.format(query=query, combined_context=combined_context)).content
+        answer = await llm.ainvoke(FILTER_PROMPT_TEMPLATE.format(query=query, combined_context=combined_context)).content
         return answer
 
     # 3.format_response that give final formated ans
@@ -478,7 +478,7 @@ class MyChatbot:
         
         # Handle URLs and Titles
         urls = [u for u in collect_urls_in_text(cleaned_text) if not is_null_url(u)]
-        titles = self._llm_generate_titles_helper(urls)
+        titles = await self._llm_generate_titles_helper(urls)
         url_to_title = dict(zip(urls, titles))
         # --- LINK NORMALIZATION ---
         normalized_content = text_normalized(cleaned_text, url_to_title)
@@ -497,7 +497,7 @@ class MyChatbot:
             if user_language and user_language.lower() != "english":
                 
                 short_trans_prompt_formatted = short_trans_prompt.format(user_language=user_language, text_normalized=normalized_content)
-                translated_short = llm.invoke(short_trans_prompt_formatted).content
+                translated_short = await llm.ainvoke(short_trans_prompt_formatted).content
                 payload_json = json.dumps({"content": translated_short, "memory_english": normalized_content})
                 return {"messages": [AIMessage(content=payload_json)]}
             else:
@@ -511,7 +511,7 @@ class MyChatbot:
         # Translate to the User's Language
         if user_language and user_language.lower() != "english":
             translation_prompt_formatted = translation_prompt.format(user_language=user_language, final_text=final_text)
-            translated_content = llm.invoke(translation_prompt_formatted).content
+            translated_content = await llm.ainvoke(translation_prompt_formatted).content
             
             # Fallback if translation failed (returned empty or broken content)
             if len(translated_content) < len(final_text) * 0.2: 
@@ -529,13 +529,13 @@ class MyChatbot:
 
     # ------------------------------------Helper Class Methods-------------------------- 
     # Extract the categories of query
-    def _extract_categories_with_gemini(self,query: str) -> list[str]:
+    async def _extract_categories_with_gemini(self,query: str) -> list[str]:
         categories_list = ["about me", "certification", "education_marks_academic", "resume", "skill", "work_experience_and_internships", "projectwork"]
         prompt = CATEGORY_PROMPT_TEMPLATE.format(query=query, categories_list=categories_list)
         
         try:
             model = self.GroqLLM
-            response = model.invoke(prompt)
+            response = await model.ainvoke(prompt)
             cleaned_text = re.sub(r"``(?:python)?\n?", "", response.content.strip(), flags=re.IGNORECASE).strip("").strip()
             categories = ast.literal_eval(cleaned_text)
             
@@ -551,12 +551,12 @@ class MyChatbot:
             return ["about me", "skill", "projectwork"]
 
     # Method that Generate Title 
-    def _llm_generate_titles_helper(self,urls: List[str]) -> List[str]:
+    async def _llm_generate_titles_helper(self,urls: List[str]) -> List[str]:
         if not urls: return []
         llm = self.GroqLLM
         input_list = "\n".join(f"{i+1}) {u}" for i, u in enumerate(urls))
         prompt = TITLE_GENERATION_PROMPT.format(n=len(urls), input_list=input_list)
-        resp = llm.invoke(prompt)
+        resp = await llm.ainvoke(prompt)
         content = strip_one_fence(str(resp.content))
         lines = [ln.strip() for ln in content.splitlines() if ln.strip()]
         return [lines[i] if i < len(lines) else "Link" for i in range(len(urls))]
