@@ -5,12 +5,12 @@ from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 from dotenv import load_dotenv
-from .LLM import main_graph
 
+# Change Import: Import the class instead of the global graph variable
+from .LLM import MyChatbot 
 
 # Load environment variables
 load_dotenv()
-
 
 # Chat view
 def cheat(request):
@@ -25,20 +25,27 @@ def cheatapi(request):
             message = data.get('message')
             thread_id = data.get('thread_id')
 
-
-
-            # Chat with the bot
-
+            # 1. Setup Config
             config = {
-                "configurable":{"thread_id":str(thread_id)}
+                "configurable": {"thread_id": str(thread_id)}
             }
-            response=main_graph.invoke(
-                {"messages": message},
-                config=config
-            )
-           
-            return JsonResponse({'response': response["messages"][-1].content})
+
+            # 2. Instantiate and Run MyChatbot
+            bot = MyChatbot(message=message, config=config)
+            response = bot.build()
+
+            # 3. Extract Response Content
+            last_message_content = response["messages"][-1].content
+            
+            # 4. Parse JSON Payload (to separate display text from memory)
+            try:
+                parsed_payload = json.loads(last_message_content)
+                final_display_text = parsed_payload.get('content', last_message_content)
+            except (json.JSONDecodeError, TypeError):
+                final_display_text = last_message_content
+
+            return JsonResponse({'response': final_display_text})
+            
     except Exception as error:
         print("Error:", error)  
         return JsonResponse({'error': str(error)})
-

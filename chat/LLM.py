@@ -8,7 +8,7 @@ from typing import Annotated, Dict, Any, List, TypedDict
 from dotenv import load_dotenv
 
 # LangChain / LangGraph Imports
-from langchain_core.messages import SystemMessage, AIMessage, AnyMessage
+from langchain_core.messages import SystemMessage, AIMessage, AnyMessage,HumanMessage
 from langchain_groq import ChatGroq
 from langchain_huggingface import HuggingFaceEndpointEmbeddings
 from langchain_google_genai import ChatGoogleGenerativeAI
@@ -18,6 +18,9 @@ from langgraph.graph.message import add_messages
 from langgraph.prebuilt import ToolNode, tools_condition
 from langgraph.checkpoint.memory import MemorySaver
 from qdrant_client import QdrantClient
+
+# Helper Function
+from .utility import *
 
 # --- Setup ---
 nest_asyncio.apply()
@@ -29,8 +32,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# --- 1. PROMPTS (PRESERVED EXACTLY) ---
-
+# --- System Prompt ---
 SYSTEM_PROMPT = """
 You are the official assistant of Dhruv Sharma and your name is "Luffy" from One Piece anime.
 If the user starts with simple greetings (e.g., "Hi", "Hello", "How are you?", "What's up?"), you should respond in a friendly, conversational manner in your Luffy persona.
@@ -44,6 +46,11 @@ IMPORTANT:
 - **Portfolio Questions:** If the user asks about Dhruv Sharma (projects, skills, education, contact), you MUST call the `qdrant_rag_tool`.
 - **Memory/Context Questions:** If the user asks about *previous conversation* (e.g., "What did I just ask?", "Repeat that", "What is my name?"), DO NOT call the tool. Answer directly from your conversation history.
 - **General/Off-topic:** If the user asks something unrelated to Dhruv or the chat (e.g. "Who is Batman?"), refuse politely.
+
+IMPORTANT:
+- The user might misspell "Dhruv" or use a translated version like "Dulub", "Durubu", "Druv". 
+- ALWAYS assume they are talking about "Dhruv Sharma" if the name is even slightly similar.
+- Do not refuse to answer just because of a typo in the name.
 
 If the user asks a question that is NOT related to Dhruv Sharma or his portfolio, respond ONLY with:
 "I can only assist with questions about Dhruv Sharma. Please ask something related to his portfolio."
@@ -174,281 +181,361 @@ Live Site: [Visit](https://setu-partner.netlify.app/)
 - Live Site: [Visit](https://setu-partner.netlify.app/)
 """
 
-# --- 2. CONFIG & CONSTANTS ---
-ALLOWED_SCHEMES = ("https://", "http://", "ftp://", "tel:")
-MD_LINK_RE = re.compile(r"\[([^\]\n]{1,200})\]\(([^()\s]{1,2048})\)")
-NESTED_LINK_RE = re.compile(r"\[[^\]]*\]\([^()]*\)\s*\([^()]*\)")
-DUPLICATE_URL_AFTER_RE = re.compile(r"\]\([^()]*\)\s*\((?:https?|mailto|ftp|tel):[^()]*\)")
-BARE_URL_RE = re.compile(r"(?P<url>(?:https?://|http://|ftp://|tel:)[^\s<>()\[\]{}\"'`,;]+)")
-BARE_EMAIL_RE = re.compile(r"(?<!mailto:)\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b")
+analysis_prompt = """
+Analyze the following user text: "{content}"
+            
+Task:
+1. Detect the language name.
+2. Translate the text to English.
+
+CRITICAL CONTEXT:
+- The user is chatting with a bot about a person named "Dhruv Sharma".
+- If the user writes a name in their native script that sounds phonetically similar to "Dhruv", "Durubu", "Daruvu", or "Sharma", you MUST translate it as "Dhruv Sharma".
+- Correct any phonetic misspellings of "Dhruv Sharma" in the translation.
+            
+Return ONLY a valid JSON object:
+{{
+    "detected_language": "Language Name",
+    "translated_text": "Text in English"
+}}
+"""
+
+Re_Ranking_Prompt = """
+You are a relevance filter. 
+User Query: "{query}"
+        
+Below are several text snippets from a portfolio. 
+Analyze them and return the IDs of the snippets that contain DIRECT answers to the query.
+Ignore snippets that are vague or unrelated.
+        
+Snippets:
+{joined_docs}
+        
+Return ONLY a list of integer IDs (e.g., [0, 2, 5]). If none are relevant, return [].
+"""
 
 
-# --- 3. MODEL & CLIENT FACTORIES ---
-def get_groq_llm():
-    if not os.environ.get("GROQ_API_KEY"): raise ValueError("GROQ_API_KEY missing.")
-    return ChatGroq(model="llama-3.3-70b-versatile", temperature=0.2, groq_api_key=os.environ.get("GROQ_API_KEY"))
-
-def get_gemini_llm():
-    if not os.environ.get("GOOGLE_API_KEY"): raise ValueError("GOOGLE_API_KEY missing.")
-    return ChatGoogleGenerativeAI(model="gemini-2.0-flash",temperature=0.2,google_api_key=os.environ.get("GOOGLE_API_KEY"))
-
-def get_embedder():
-    if not os.environ.get("HUGGINGFACEHUB_API_TOKEN"): raise ValueError("HUGGINGFACEHUB_API_TOKEN missing.")
-    return HuggingFaceEndpointEmbeddings(model="sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2")
-
-def get_qdrant_client():
-    return QdrantClient(url=os.getenv("QDRANT_URL"), api_key=os.getenv("QDRANT_API_KEY"))
+short_trans_prompt ="""
+Translate the following text to {user_language}.
+Maintain the persona of Luffy.
+text: {text_normalized}
+"""
 
 
-# --- 4. UTILITIES (Regex, Strings, URLs) ---
-def strip_one_fence(s: str) -> str:
-    s = s.strip()
-    if s.startswith("```"):
-        first_nl = s.find("\n")
-        if first_nl == -1: return s
-        last = s.rfind("\n```")
-        if last == -1:
-            if s.endswith("```"): return s[first_nl + 1: len(s) - 3].strip()
-            return s
-        return s[first_nl + 1: last].rstrip("\n").strip()
-    return s
+translation_prompt = """
+You are Luffy (from One Piece). Translate the following Markdown content to: "{user_language}".
 
-def is_allowed_absolute_url(url: str) -> bool:
-    return any(url.startswith(s) for s in ALLOWED_SCHEMES)
+RULES:
+1. **Accurate Translation**: Translate the meaning accurately into the native script of {user_language} (e.g., use Kanji/Kana for Japanese).
+2. **Technical Terms**: Keep technical names (like "Python", "Django", "Render", "Vercel", "GitHub") in English.
+3. **Formatting**: PRESERVE the Markdown structure (Headers, Bullet points, Links) exactly.
+4. **URL Safety**: Do NOT translate or change URLs inside `( )`.
 
-def is_null_url(url: str) -> bool:
-    return url.strip().lower() == "[https://null.com](https://null.com)"
+Content to Translate:
+{final_text}
+"""
 
-def enforce_no_nested_or_duplicate_links(text: str) -> str:
-    text = NESTED_LINK_RE.sub("", text)
-    text = DUPLICATE_URL_AFTER_RE.sub(")", text)
-    return text
 
-def collect_urls_in_text(text: str) -> List[str]:
-    urls = set()
-    for m in MD_LINK_RE.finditer(text):
-        if is_allowed_absolute_url(m.group(2).strip()): urls.add(m.group(2).strip())
-    for m in BARE_URL_RE.finditer(text):
-        if is_allowed_absolute_url(m.group("url").strip()): urls.add(m.group("url").strip())
-    return list(urls)
-
-def collapse_blank_lines(s: str) -> str:
-    return re.sub(r"\n{3,}", "\n\n", s.strip())
-
-# --- 5. CORE LOGIC & TOOLS ---
-
+# ----------------------------------LangGrapg State Class-------------------------
 class State(TypedDict):
     messages: Annotated[list[AnyMessage], add_messages]
+    language: str
 
-def extract_categories_with_gemini(query: str) -> list[str]:
-    categories_list = ["about me", "certification", "education_marks_academic", "resume", "skill", "Work_Experience_and_Internships", "projectwork"]
-    prompt = CATEGORY_PROMPT_TEMPLATE.format(query=query, categories_list=categories_list)
-    
-    try:
-        model = get_groq_llm()
-        response = model.invoke(prompt)
-        cleaned_text = re.sub(r"``(?:python)?\n?", "", response.content.strip(), flags=re.IGNORECASE).strip("").strip()
-        categories = ast.literal_eval(cleaned_text)
+# --------------------------------My chatbot class----------------------------
+class MyChatbot:
+    def __init__(self,message:str,config:dict=None):
+        self.messages = message
+        self.config = config
+        self.main_graph = None
+        self.tools = None
+        self.llm_with_tools = None
+        self.memory_saver = MemorySaver()
+        self.GroqLLM =  ChatGroq(model="llama-3.3-70b-versatile", temperature=0.2, groq_api_key=os.environ.get("GROQ_API_KEY"))
+        self.GeminiLLm=ChatGoogleGenerativeAI(model="gemini-1.5-flash",temperature=0.2,google_api_key=os.environ.get("GOOGLE_API_KEY"))
+        self.embedder =  HuggingFaceEndpointEmbeddings(model="sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2")
+        self.qdrantClient= QdrantClient(url=os.getenv("QDRANT_URL"), api_key=os.getenv("QDRANT_API_KEY"))
+
+    # Main Fuction That create and call the build graph
+    def build(self):
         
-        normalized = [cat.strip().lower().replace(" ", "_") for cat in categories]
-        matched = [cat for cat in categories_list if cat.lower().replace(" ", "_") in normalized]
+        # build graph
+        self.main_graph = self._buildGraph()
         
-        if not matched:
-            matched = ["about me", "skill", "projectwork"]
-        return matched
-
-    except Exception as e:
-        logger.error(f"Category extraction error: {e}")
-        return ["about me", "skill", "projectwork"]
-
-def qdrant_rag_tool(query: str) -> str:
-    """Searches Dhruv Sharma's portfolio content using vector similarity."""
-    
-    logger.info(f"User query: {query}")
-    categories = extract_categories_with_gemini(query)
-    
-    if not categories: return "No matching category found in portfolio."
-
-    qdrant_client = get_qdrant_client()
-    embedder = get_embedder()
-    all_context_docs = [] # Changed from simple string list to objects for filtering
-
-    # 1. Fetch MORE documents (Strategy 1: High Recall)
-    for collection in categories:
-        try:
-            store = QdrantVectorStore(client=qdrant_client, collection_name=collection, embedding=embedder)
-            # Increased k to 10 to gather more candidates
-            retriever = store.as_retriever(search_type="mmr", search_kwargs={"k": 10, "fetch_k": 30, "lambda_mult": 0.5})
-            docs = retriever.invoke(query)
-            all_context_docs.extend(docs)
-        except Exception as e:
-            logger.error(f"Error retrieving from {collection}: {e}")
-
-    if not all_context_docs: return "No relevant information found in portfolio."
-
-    # 2. LLM-Based Re-ranking / Filtering (Strategy 1: High Precision)
-    # We ask the LLM to pick the winners before generating the answer.
-    
-    # Format docs with IDs
-    doc_text_list = [f"ID {i}: {d.page_content.strip()}" for i, d in enumerate(all_context_docs) if d.page_content.strip()]
-    joined_docs = "\n\n".join(doc_text_list)
-
-    if not joined_docs: return "No relevant information found."
-
-    # Fast check with Groq to find relevant IDs
-    check_prompt = f"""
-    You are a relevance filter. 
-    User Query: "{query}"
-    
-    Below are several text snippets from a portfolio. 
-    Analyze them and return the IDs of the snippets that contain DIRECT answers to the query.
-    Ignore snippets that are vague or unrelated.
-    
-    Snippets:
-    {joined_docs}
-    
-    Return ONLY a list of integer IDs (e.g., [0, 2, 5]). If none are relevant, return [].
-    """
-    
-    try:
-        llm_check = get_groq_llm()
-        check_response = llm_check.invoke(check_prompt).content
-        relevant_ids = [int(num) for num in re.findall(r'\d+', check_response)]
+        # call the graph
+        return self.main_graph.invoke(
+            {"messages": self.message},
+            config=self.config
+        )
         
-        # Filter the docs based on LLM selection
-        relevant_content = [all_context_docs[i].page_content.strip() for i in relevant_ids if i < len(all_context_docs)]
+    # -------------------------------- Buld Graph Method create nodes and graph flows--------------------------------
+    def _buildGraph(self) -> StateGraph:
         
-        # Fallback: if LLM says "none", but we have docs, take the top 3 just in case
-        if not relevant_content:
-             relevant_content = [d.page_content.strip() for d in all_context_docs[:3]]
-             
-    except Exception as e:
-        logger.error(f"Re-ranking error: {e}. Falling back to raw retrieval.")
-        relevant_content = [d.page_content.strip() for d in all_context_docs[:5]]
+        self.tools = [self._qdrant_rag_tool]
+        self.llm_with_tools = self.GroqLLM.bind_tools(self.tools)
 
-    combined_context = "\n\n".join(set(relevant_content))
-    
-    # 3. Final Answer Generation
-    llm = get_groq_llm()
-    answer = llm.invoke(FILTER_PROMPT_TEMPLATE.format(query=query, combined_context=combined_context)).content
-    return answer
+        # Create Node
+        graph = StateGraph(State)
+        graph.add_node("Run LLM with Tools", self._run_llm_with_tools)
+        graph.add_node("tools", ToolNode(self.tools))
+        graph.add_node("Format Response", self._format_response)
+        graph.add_node("handle_chit_chat", self._handle_chit_chat)
 
-# --- 6. NODE FUNCTIONS ---
+        # Create Graph Flow 
+        graph.add_edge(START, "Run LLM with Tools")
+        graph.add_conditional_edges(
+            "Run LLM with Tools",
+            self._route_after_llm,
+            {
+                "tools": "tools",       
+                "handle_chit_chat": "handle_chit_chat" 
+            }
+        )
+        graph.add_edge("tools", "Format Response")
+        graph.add_edge("Format Response", END)
+        graph.add_edge("handle_chit_chat", END)
 
-tools = [qdrant_rag_tool]
-llm_with_tools = get_groq_llm().bind_tools(tools)
-
-def run_llm_with_tools(state: State):
-    messages = state["messages"]
-    system_msg = SystemMessage(content=SYSTEM_PROMPT)
-    all_messages = [system_msg] + messages
-    current_user_msg = messages[-1].content if messages else ""
-
-    # Caching logic for repeated questions
-    for i in range(len(messages) - 2):
-        if messages[i].type == "human" and messages[i].content.strip().lower() == current_user_msg.strip().lower():
-            for j in range(i + 1, len(messages)):
-                if messages[j].type == "ai":
-                    has_tools = hasattr(messages[j], 'tool_calls') and messages[j].tool_calls
-                    has_content = messages[j].content and messages[j].content.strip()
-                    if has_content and not has_tools:
-                        logger.info("✅ Returning cached response.")
-                        return {"messages": [messages[j].content]}
-            break
-
-    result = llm_with_tools.invoke(all_messages)
-    return {"messages": [result]}
-
-def llm_generate_titles_helper(urls: List[str]) -> List[str]:
-    if not urls: return []
-    llm = get_groq_llm()
-    input_list = "\n".join(f"{i+1}) {u}" for i, u in enumerate(urls))
-    prompt = TITLE_GENERATION_PROMPT.format(n=len(urls), input_list=input_list)
-    resp = llm.invoke(prompt)
-    content = strip_one_fence(str(resp.content))
-    lines = [ln.strip() for ln in content.splitlines() if ln.strip()]
-    return [lines[i] if i < len(lines) else "Link" for i in range(len(urls))]
-
-def format_response(state: Dict[str, Any]) -> Dict[str, Any]:
-    raw_answer = state['messages'][-1].content
-    # --- STEP 0: SANITIZE EMAILS (Make them plain text) ---
-    raw_answer = re.sub(r"\[.*?\]\(mailto:([^)]+)\)", r"\1", raw_answer, flags=re.IGNORECASE)
-    
-    # 2. Remove any remaining "mailto:" prefixes
-    raw_answer = re.sub(r"mailto:", "", raw_answer, flags=re.IGNORECASE)
-    try:
-        payload = json.loads(raw_answer)
-        if isinstance(payload, dict) and "content" in payload: return {"messages": [AIMessage(content=raw_answer)]}
-    except: pass
-
-    question = next((msg.content for msg in state['messages'] if getattr(msg, "type", None) == 'human'), "")
-    
-    # --- STEP 1: PRE-PROCESSING ---
-    cleaned_text = enforce_no_nested_or_duplicate_links(strip_one_fence(raw_answer))
-    email_map = {}
-    def protect_email(match):
-        placeholder = f"__EMAIL_PLACEHOLDER_{len(email_map)}__"
-        email_map[placeholder] = match.group(0)
-        return placeholder
-    text_safe = BARE_EMAIL_RE.sub(protect_email, cleaned_text)
-
-    # Handle URLs and Titles
-    urls = [u for u in collect_urls_in_text(text_safe) if not is_null_url(u)]
-    titles = llm_generate_titles_helper(urls)
-    url_to_title = dict(zip(urls, titles))
-
-    # --- STEP 2: LINK NORMALIZATION ---
-    def normalize_link(text, url): 
-        if is_null_url(url): return f"{url_to_title.get(url, 'Link')}: Link not available"
-        if not is_allowed_absolute_url(url): return ""
         
-        title = url_to_title.get(url) or (text if text else "Link")
-        if title == "": title = "Link"
-        return f"{title}: [Visit]({url})"
-
-    text_normalized = MD_LINK_RE.sub(lambda m: normalize_link(m.group(1).strip(), m.group(2).strip()), text_safe)
-    text_normalized = BARE_URL_RE.sub(lambda m: normalize_link(None, m.group("url").strip()), text_normalized)
+        return graph.compile(checkpointer=self.memory_saver)
     
-    # Final Cleanup
-    text_normalized = enforce_no_nested_or_duplicate_links(text_normalized)
-    text_normalized = collapse_blank_lines(text_normalized)
-
-    # --- STEP 4: DECIDE TO SKIP OR FORMAT ---
-    line_count = len(text_normalized.strip().splitlines())
-    has_http = "http" in text_normalized
-    
-    # If it's short, return immediately
-    if line_count < 3 and not has_http:
-         for ph, email in email_map.items():
-            text_normalized = text_normalized.replace(ph, email)
+    # -----------------------------------Methods that are used in Graph as par the graph flow-------------------------
+    # 1. Call llm with tools
+    def _run_llm_with_tools(self,state: State):
+        messages = state["messages"]
+        
+        last_human_msg_index = -1
+        for i in range(len(messages) - 1, -1, -1):
+            if isinstance(messages[i], HumanMessage):
+                last_human_msg_index = i
+                break
+                
+        detected_language = "English" # Default
+        
+        if last_human_msg_index != -1:
+            last_message = messages[last_human_msg_index]
+            llm = self.GroqLLM
             
-         logger.info("Skipping heavy formatting for short response.")
-         payload_json = json.dumps({"content": text_normalized})
-         return {"messages": [AIMessage(content=payload_json)]}
+            try:
+                analysis_prompt_formatted = analysis_prompt.format(content=last_message.content)
+                response = llm.invoke(analysis_prompt_formatted).content
+                cleaned_json = strip_one_fence(response)
+                data = json.loads(cleaned_json)
+                
+                detected_language = data.get("detected_language", "English")
+                english_text = data.get("translated_text", last_message.content)
+                
+                logger.info(f"Detected: {detected_language}, English: {english_text}")
+                
+                messages[last_human_msg_index] = HumanMessage(content=english_text)
+                
+            except Exception as e:
+                logger.error(f"Preprocessing error: {e}")
+                detected_language = "English"
 
-    # --- STEP 5: HEAVY FORMATTING ---
-    llm = get_groq_llm()
-    formatted = llm.invoke(HUMAN_FORMATTING_PROMPT_TEMPLATE.format(question=question, normalized=text_normalized))
-    final_text = strip_one_fence(str(formatted.content))
+        # --- CLEAN HISTORY FOR LLM ---
+        cleaned_history = clean_history(messages)
+        
+        # --- INVOKE LLM ---
+        all_messages = [SystemMessage(content=SYSTEM_PROMPT)] + cleaned_history
+        response_msg = self.llm_with_tools.invoke(all_messages)
+        return {
+            "messages": [response_msg],
+            "language": detected_language
+        }
+        
+    # 2. If llm with tool don't call the tool then this method get call
+    def _handle_chit_chat(self,state: State) -> Dict[str, Any]:
+        """Handles simple conversation with standard translation."""
+        last_message = state['messages'][-1]
+        user_language = state.get("language", "English")
+        english_content = last_message.content
 
-    # Restore Bare Emails (Plain text)
-    for ph, email in email_map.items():
-        final_text = final_text.replace(ph, email)
+        # Simple Translation only if needed
+        if user_language and user_language.lower() != "english":
+            llm = self.GroqLLM
+            prompt = f"Translate the following text to {user_language}:\n\n{english_content}" 
+            final_content = llm.invoke(prompt).content
+        else:
+            final_content = english_content
 
-    payload_json = json.dumps({"content": final_text})
-    print(f"Final response: {final_text}")
-    return {"messages": [AIMessage(content=payload_json)]}
+        # Return valid JSON for your frontend
+        payload = json.dumps({
+            "content": final_content,
+            "memory_english": english_content
+        })
+        
+        return {"messages": [AIMessage(content=payload)]}
+    # 2. If llm with tool ,call qdrant_rag_tool that give documents from Vector DB
+    def _qdrant_rag_tool(self,query: str) -> str:
+        """Searches Dhruv Sharma's portfolio content using vector similarity."""
+        
+        logger.info(f"User query: {query}")
+        
+        # Extract the categories of query
+        categories = self._extract_categories_with_gemini(query)
+        if not categories: return "No matching category found in portfolio."
 
-# --- 7. GRAPH CONSTRUCTION ---
-graph = StateGraph(State)
-graph.add_node("Run LLM with Tools", run_llm_with_tools)
-graph.add_node("tools", ToolNode(tools))
-graph.add_node("Format Response", format_response)
+        all_context_docs = []
 
-graph.add_edge(START, "Run LLM with Tools")
-graph.add_conditional_edges("Run LLM with Tools", tools_condition)
-graph.add_edge("tools", "Format Response")
-graph.add_edge("Format Response", END)
+        # ---- Fetch the Document from vectorer DB ----
+        for collection in categories:
+            try:
+                store = QdrantVectorStore(client=self.qdrantClient, collection_name=collection, embedding=self.embedder)
+                # Increased k to 10 to gather more candidates
+                retriever = store.as_retriever(search_type="mmr", search_kwargs={"k": 10, "fetch_k": 30, "lambda_mult": 0.5})
+                docs = retriever.invoke(query)
+                all_context_docs.extend(docs)
+            except Exception as e:
+                logger.error(f"Error retrieving from {collection}: {e}")
+        
+        # Doing Some validation and Creating Join Documents
+        if not all_context_docs: return "No relevant information found in portfolio."
+        doc_text_list = [f"ID {i}: {d.page_content.strip()}" for i, d in enumerate(all_context_docs) if d.page_content.strip()]
+        joined_docs = "\n\n".join(doc_text_list)
+        if not joined_docs: return "No relevant information found."
 
-memory_saver = MemorySaver()
-main_graph = graph.compile(checkpointer=memory_saver)
+        #---- LLM-Based Re-ranking / Filtering ---- 
+        try:
+            llm_check = self.GroqLLM
+            check_prompt = Re_Ranking_Prompt.format(query=query, joined_docs=joined_docs)
+            check_response = llm_check.invoke(check_prompt).content
+            relevant_ids = [int(num) for num in re.findall(r'\d+', check_response)]
+            
+            # Filter the docs based on LLM selection
+            relevant_content = [all_context_docs[i].page_content.strip() for i in relevant_ids if i < len(all_context_docs)]
+            
+            # Fallback: if LLM says "none", but we have docs, take the top 3 just in case
+            if not relevant_content:
+                relevant_content = [d.page_content.strip() for d in all_context_docs[:5]]           
+        except Exception as e:
+            logger.error(f"Re-ranking error: {e}. Falling back to raw retrieval.")
+            relevant_content = [d.page_content.strip() for d in all_context_docs[:5]]
+
+        combined_context = "\n\n".join(set(relevant_content))
+        
+        #---- Final Answer Generation ----
+        llm = self.GroqLLM
+        answer = llm.invoke(FILTER_PROMPT_TEMPLATE.format(query=query, combined_context=combined_context)).content
+        return answer
+
+    # 3.format_response that give final formated ans
+    def _format_response(self,state: State) -> Dict[str, Any]:
+        raw_answer = state['messages'][-1].content
+        user_language = state.get("language", "English")
+        
+        # --- SANITIZE EMAILS ---
+        raw_answer = sanitize_email(raw_answer)
+        try:
+            payload = json.loads(raw_answer)
+            if isinstance(payload, dict) and "content" in payload: return {"messages": [AIMessage(content=raw_answer)]}
+        except: pass
+
+        question = next((msg.content for msg in reversed(state['messages']) if isinstance(msg, HumanMessage)), "")
+        
+        # --- PRE-PROCESSING ---
+        cleaned_text = enforce_no_nested_or_duplicate_links(strip_one_fence(raw_answer))
+        safe_text_content, email_map = text_safe(cleaned_text)
+        
+        # Handle URLs and Titles
+        urls = [u for u in collect_urls_in_text(safe_text_content) if not is_null_url(u)]
+        titles = self._llm_generate_titles_helper(urls)
+        url_to_title = dict(zip(urls, titles))
+
+        # --- LINK NORMALIZATION ---
+        normalized_content = text_normalized(safe_text_content, url_to_title)
+        normalized_content = enforce_no_nested_or_duplicate_links(normalized_content)
+        normalized_content = collapse_blank_lines(normalized_content)
+        
+        # --- DECIDE TO SKIP OR FORMAT ---
+        line_count = len(normalized_content.strip().splitlines())
+        has_http = "http" in normalized_content
+        llm = self.GroqLLM
+        
+        # Short response path
+        if line_count < 3 and not has_http:
+            for ph, email in email_map.items():
+                normalized_content = normalized_content.replace(ph, email)
+            
+            logger.info("Skipping heavy formatting for short response.")
+            
+            if user_language and user_language.lower() != "english":
+                
+                short_trans_prompt_formatted = short_trans_prompt.format(user_language=user_language, text_normalized=normalized_content)
+                translated_short = llm.invoke(short_trans_prompt_formatted).content
+                payload_json = json.dumps({"content": translated_short, "memory_english": normalized_content})
+                return {"messages": [AIMessage(content=payload_json)]}
+            else:
+                payload_json = json.dumps({"content": normalized_content})
+                return {"messages": [AIMessage(content=payload_json)]}
+
+        # --- HEAVY FORMATTING ---
+        formatted = llm.invoke(HUMAN_FORMATTING_PROMPT_TEMPLATE.format(question=question, normalized=normalized_content))
+        final_text = strip_one_fence(str(formatted.content))
+        
+        # Translate to the User's Language
+        if user_language and user_language.lower() != "english":
+            translation_prompt_formatted = translation_prompt.format(user_language=user_language, final_text=final_text)
+            translated_content = llm.invoke(translation_prompt_formatted).content
+            
+            # Fallback if translation failed (returned empty or broken content)
+            if len(translated_content) < len(final_text) * 0.2: 
+                logger.warning("Translation seemed to fail (content too short). Reverting to English.")
+                translated_content = final_text
+        else:
+            translated_content = final_text
+
+        for ph, email in email_map.items():
+            translated_content = translated_content.replace(ph, email)
+            final_text = final_text.replace(ph, email)
+
+        payload = json.dumps({
+            "content": translated_content, 
+            "memory_english": final_text
+        })
+        return {"messages": [AIMessage(content=payload)]}
+
+
+    # ------------------------------------Helper Class Methods-------------------------- 
+    # Extract the categories of query
+    def _extract_categories_with_gemini(self,query: str) -> list[str]:
+        categories_list = ["about me", "certification", "education_marks_academic", "resume", "skill", "work_experience_and_internships", "projectwork"]
+        prompt = CATEGORY_PROMPT_TEMPLATE.format(query=query, categories_list=categories_list)
+        
+        try:
+            model = self.GroqLLM
+            response = model.invoke(prompt)
+            cleaned_text = re.sub(r"``(?:python)?\n?", "", response.content.strip(), flags=re.IGNORECASE).strip("").strip()
+            categories = ast.literal_eval(cleaned_text)
+            
+            normalized = [cat.strip().lower().replace(" ", "_") for cat in categories]
+            matched = [cat for cat in categories_list if cat.lower().replace(" ", "_") in normalized]
+            
+            if not matched:
+                matched = ["about me", "skill", "projectwork"]
+            return matched
+
+        except Exception as e:
+            logger.error(f"Category extraction error: {e}")
+            return ["about me", "skill", "projectwork"]
+
+    # Method that Generate Title 
+    def _llm_generate_titles_helper(self,urls: List[str]) -> List[str]:
+        if not urls: return []
+        llm = self.GroqLLM
+        input_list = "\n".join(f"{i+1}) {u}" for i, u in enumerate(urls))
+        prompt = TITLE_GENERATION_PROMPT.format(n=len(urls), input_list=input_list)
+        resp = llm.invoke(prompt)
+        content = strip_one_fence(str(resp.content))
+        lines = [ln.strip() for ln in content.splitlines() if ln.strip()]
+        return [lines[i] if i < len(lines) else "Link" for i in range(len(urls))]
+
+    # Method that decide where to go based on tool calls
+    def _route_after_llm(state: State) -> str:
+        """Decides where to go based on tool calls."""
+        last_message = state["messages"][-1]
+        
+        # If the LLM wants to use a tool, go to the tool node
+        if last_message.tool_calls:
+            return "tools"
+            
+        # If NO tool call, go to the chit-chat handler
+        return "handle_chit_chat"
