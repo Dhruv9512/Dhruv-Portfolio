@@ -256,16 +256,14 @@ class MyChatbot:
         self.qdrantClient= QdrantClient(url=os.getenv("QDRANT_URL"), api_key=os.getenv("QDRANT_API_KEY"))
 
     # Main Fuction That create and call the build graph
-    def build(self):
+    async def build(self):
         
         # build graph
         self.main_graph = self._buildGraph()
         
-        # call the graph
-        return self.main_graph.invoke(
-            {"messages": self.message},
-            config=self.config
-        )
+        # call the graph using astream_event()
+        async for event in self._stream_response():
+            yield event
         
     # -------------------------------- Buld Graph Method create nodes and graph flows--------------------------------
     def _buildGraph(self) -> StateGraph:
@@ -297,9 +295,50 @@ class MyChatbot:
         
         return graph.compile(checkpointer=self.memory_saver)
     
+    # -----------------------------------Stream Response method that invoke the graph and stream the response-----------------------------------
+    async def _stream_response(self):
+        async for event in self.main_graph.astream_events(
+            {"messages": self.messages}, 
+            config=self.config, 
+            version="v1"
+        ):
+            kind = event["event"]
+            node_name = event['metadata'].get('langgraph_node', '')
+            tags = event.get("tags", [])
+
+            # --- STREAMING FILTER LOGIC ---
+            
+            # Case A: Main LLM (Typing "Hy", "Hello")
+            if kind == "on_chat_model_stream" and node_name == "Run LLM with Tools" and "response_stream" in tags:
+                content = event["data"]["chunk"].content
+                if content:
+                    yield {
+                        "type": "token",
+                        "content": content
+                    }
+
+            # Case B: Final Formatted Output (RAG)
+            elif kind == "on_chat_model_stream" and "response_stream" in tags:
+                content = event["data"]["chunk"].content
+                if content:
+                    yield {
+                        "type": "token",
+                        "content": content
+                    }
+
+            # Case C: Logs (Searching...)
+            elif kind == "on_tool_start":
+                yield {
+                    "type": "log",
+                    "content": f"Searching: {event['name']}..."
+                }
+        
+        # Signal completion
+        yield {"type": "done"}
+    
     # -----------------------------------Methods that are used in Graph as par the graph flow-------------------------
     # 1. Call llm with tools
-    def _run_llm_with_tools(self,state: State):
+    async def _run_llm_with_tools(self,state: State):
         messages = state["messages"]
         
         last_human_msg_index = -1
@@ -336,14 +375,17 @@ class MyChatbot:
         
         # --- INVOKE LLM ---
         all_messages = [SystemMessage(content=SYSTEM_PROMPT)] + cleaned_history
-        response_msg = self.llm_with_tools.invoke(all_messages)
+        response_msg = await self.llm_with_tools.ainvoke(
+            all_messages, 
+            config={"tags": ["response_stream"]}
+        )
         return {
             "messages": [response_msg],
             "language": detected_language
         }
         
     # 2. If llm with tool don't call the tool then this method get call
-    def _handle_chit_chat(self,state: State) -> Dict[str, Any]:
+    async def _handle_chit_chat(self,state: State) -> Dict[str, Any]:
         """Handles simple conversation with standard translation."""
         last_message = state['messages'][-1]
         user_language = state.get("language", "English")
@@ -353,7 +395,7 @@ class MyChatbot:
         if user_language and user_language.lower() != "english":
             llm = self.GroqLLM
             prompt = f"Translate the following text to {user_language}:\n\n{english_content}" 
-            final_content = llm.invoke(prompt).content
+            final_content = await llm.ainvoke(prompt,config={"tags": ["response_stream"]}).content
         else:
             final_content = english_content
 
@@ -418,7 +460,7 @@ class MyChatbot:
         return answer
 
     # 3.format_response that give final formated ans
-    def _format_response(self,state: State) -> Dict[str, Any]:
+    async def _format_response(self,state: State) -> Dict[str, Any]:
         raw_answer = state['messages'][-1].content
         user_language = state.get("language", "English")
         
@@ -433,15 +475,13 @@ class MyChatbot:
         
         # --- PRE-PROCESSING ---
         cleaned_text = enforce_no_nested_or_duplicate_links(strip_one_fence(raw_answer))
-        safe_text_content, email_map = text_safe(cleaned_text)
         
         # Handle URLs and Titles
-        urls = [u for u in collect_urls_in_text(safe_text_content) if not is_null_url(u)]
+        urls = [u for u in collect_urls_in_text(cleaned_text) if not is_null_url(u)]
         titles = self._llm_generate_titles_helper(urls)
         url_to_title = dict(zip(urls, titles))
-
         # --- LINK NORMALIZATION ---
-        normalized_content = text_normalized(safe_text_content, url_to_title)
+        normalized_content = text_normalized(cleaned_text, url_to_title)
         normalized_content = enforce_no_nested_or_duplicate_links(normalized_content)
         normalized_content = collapse_blank_lines(normalized_content)
         
@@ -452,9 +492,6 @@ class MyChatbot:
         
         # Short response path
         if line_count < 3 and not has_http:
-            for ph, email in email_map.items():
-                normalized_content = normalized_content.replace(ph, email)
-            
             logger.info("Skipping heavy formatting for short response.")
             
             if user_language and user_language.lower() != "english":
@@ -468,7 +505,7 @@ class MyChatbot:
                 return {"messages": [AIMessage(content=payload_json)]}
 
         # --- HEAVY FORMATTING ---
-        formatted = llm.invoke(HUMAN_FORMATTING_PROMPT_TEMPLATE.format(question=question, normalized=normalized_content))
+        formatted = await llm.ainvoke(HUMAN_FORMATTING_PROMPT_TEMPLATE.format(question=question, normalized=normalized_content),config={"tags": ["response_stream"]} )
         final_text = strip_one_fence(str(formatted.content))
         
         # Translate to the User's Language
@@ -482,11 +519,7 @@ class MyChatbot:
                 translated_content = final_text
         else:
             translated_content = final_text
-
-        for ph, email in email_map.items():
-            translated_content = translated_content.replace(ph, email)
-            final_text = final_text.replace(ph, email)
-
+            
         payload = json.dumps({
             "content": translated_content, 
             "memory_english": final_text
@@ -529,7 +562,7 @@ class MyChatbot:
         return [lines[i] if i < len(lines) else "Link" for i in range(len(urls))]
 
     # Method that decide where to go based on tool calls
-    def _route_after_llm(state: State) -> str:
+    def _route_after_llm(self,state: State) -> str:
         """Decides where to go based on tool calls."""
         last_message = state["messages"][-1]
         

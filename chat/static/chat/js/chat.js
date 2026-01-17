@@ -65,39 +65,94 @@ function convertMarkdownToHTML(markdownText) {
   return marked.parse(fixed, { renderer });
 }
 
-// --- Chat UI Functions ---
-function typeMessageWithLLM(
-  element,
-  llmJson,
-  index = 0,
-  speed = 300,
-  onComplete = null
-) {
-  if (element._typingTimer) {
-    clearTimeout(element._typingTimer);
-    element._typingTimer = null;
-  }
+// --- WebSocket Setup ---
+// Generate a unique thread ID for the session (non-persistent)
+const threadId = `session-${Math.random().toString(36).substr(2, 9)}`;
+console.log("Current Session ID:", threadId);
 
-  const rawText =
-    llmJson && typeof llmJson.content === "string" ? llmJson.content : "";
-  const scrollContainer = element.closest(".chatbot-messages");
+// Determine protocol (ws or wss)
+const socketProtocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
+const chatSocket = new WebSocket(
+    socketProtocol + window.location.host + '/ws/chat/' + threadId + '/'
+);
 
-  const scrollToBottom = () => {
-    if (scrollContainer)
-      scrollContainer.scrollTop = scrollContainer.scrollHeight;
-  };
+let botMessageBuffer = ""; 
+let currentBotMessageDiv = null;
 
-  if (index < rawText.length) {
-    element.innerHTML = convertMarkdownToHTML(rawText.substring(0, index + 1));
-    scrollToBottom();
-    element._typingTimer = setTimeout(() => {
-      typeMessageWithLLM(element, llmJson, index + 1, speed, onComplete);
-    }, speed);
-  } else {
-    element.innerHTML = convertMarkdownToHTML(rawText);
-    scrollToBottom();
-    if (typeof onComplete === "function") onComplete();
-  }
+chatSocket.onopen = function(e) {
+    console.log("WebSocket connected.");
+};
+
+chatSocket.onmessage = function(e) {
+    const data = JSON.parse(e.data);
+
+    // --- 1. Remove Loading Indicator on first real token ---
+    const loadingDiv = document.getElementById("loading-message");
+    if (loadingDiv && (data.type === 'token' || data.type === 'done')) {
+        loadingDiv.remove();
+    }
+
+    // --- 2. Handle Stream Tokens ---
+    if (data.type === 'token') {
+        // Create the bot message bubble if it doesn't exist yet
+        if (!currentBotMessageDiv) {
+            currentBotMessageDiv = createBotMessageBubble();
+        }
+        
+        botMessageBuffer += data.content;
+        
+        // Render Markdown immediately
+        currentBotMessageDiv.innerHTML = convertMarkdownToHTML(botMessageBuffer);
+        
+        // Auto-scroll
+        const messagesContainer = document.getElementById("chatbot-messages");
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    } 
+    // --- 3. Handle Status Logs ---
+    else if (data.type === 'log') {
+        // Optional: Update a status bar instead of console
+        console.log("Luffy Log:", data.content);
+    }
+    // --- 4. Handle Completion ---
+    else if (data.type === 'done') {
+        console.log("Stream complete.");
+        botMessageBuffer = ""; 
+        currentBotMessageDiv = null; // Reset for next turn
+        hideLoading(); // Re-enable inputs
+    }
+    // --- 5. Handle Errors ---
+    else if (data.type === 'error') {
+        if (loadingDiv) loadingDiv.remove();
+        addMessage("bot", `❌ *Error:* ${data.content}`);
+        hideLoading();
+    }
+};
+
+chatSocket.onclose = function(e) {
+    console.error('Chat socket closed unexpectedly');
+    // Optional: Attempt reconnect logic here
+};
+
+// --- UI Helper Functions ---
+
+function createBotMessageBubble() {
+    const messagesContainer = document.getElementById("chatbot-messages");
+    const outerDiv = document.createElement("div");
+    outerDiv.className = "flex items-start gap-3";
+    
+    const img = document.createElement("img");
+    img.className = "w-10 h-10 flex-shrink-0 rounded-full";
+    img.src = "/static/index/img/cheatboaticon.gif";
+    img.alt = "MyBoat icon";
+    
+    const messageDiv = document.createElement("div");
+    messageDiv.className = "message bot-message p-3 rounded-lg shadow-md";
+    
+    outerDiv.appendChild(img);
+    outerDiv.appendChild(messageDiv);
+    messagesContainer.appendChild(outerDiv);
+    
+    return messageDiv;
 }
 
 function showLoadingMessage() {
@@ -105,13 +160,16 @@ function showLoadingMessage() {
   const outerDiv = document.createElement("div");
   outerDiv.className = "flex items-start gap-3 loading-indicator";
   outerDiv.id = "loading-message";
+  
   const img = document.createElement("img");
   img.className = "w-10 h-10 flex-shrink-0 rounded-full";
   img.src = "/static/index/img/cheatboaticon.gif";
   img.alt = "MyBoat icon";
+  
   const messageDiv = document.createElement("div");
   messageDiv.className = "message p-3 rounded-lg shadow-md";
   messageDiv.textContent = "...";
+  
   outerDiv.appendChild(img);
   outerDiv.appendChild(messageDiv);
   messagesContainer.appendChild(outerDiv);
@@ -124,122 +182,66 @@ function addMessage(sender, payload) {
   outerDiv.className = `flex items-start gap-3 ${
     sender === "user" ? "justify-end" : ""
   }`;
+  
   const messageDiv = document.createElement("div");
   messageDiv.className = `message ${sender}-message p-3 ${
     sender === "bot" ? "bot-message" : ""
   }`;
 
-  if (sender === "bot") {
-    // FIXED: Remove the '...' loader right before adding the bot message
-    const loadingDiv = document.getElementById("loading-message");
-    if (loadingDiv) loadingDiv.remove();
-
-    const img = document.createElement("img");
-    img.className = "w-10 h-10 flex-shrink-0 rounded-full";
-    img.src = "/static/index/img/cheatboaticon.gif";
-    img.alt = "MyBoat icon";
-    outerDiv.appendChild(img);
-    outerDiv.appendChild(messageDiv);
-    messagesContainer.appendChild(outerDiv);
-    
-    // The loading state is now handled by hideLoading in the callback
-    typeMessageWithLLM(messageDiv, payload, 0, 1, () => {
-        hideLoading(); // This will re-enable inputs and remove the loading class
-    });
-  } else {
-    messageDiv.textContent = payload;
+  if (sender === "user") {
+    messageDiv.textContent = payload; // User messages are plain text
     outerDiv.appendChild(messageDiv);
     messagesContainer.appendChild(outerDiv);
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
-  }
-}
-
-let threadId = `thread_${Date.now()}_${Math.floor(Math.random() * 100000)}`;
-
-async function fetchdata(messageText) {
-  try {
-    const response = await fetch("/chat/api/", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message: messageText, thread_id: threadId }),
-    });
-
-    let data;
-    try {
-      data = await response.json();
-    } catch (e) {
-      console.error("Response is not JSON:", e);
-      addMessage("bot", { content: "❗ Server returned a non-JSON response." });
-      return;
-    }
-
-    const botPayloadString = data?.response;
-    let botPayload;
-
-    if (typeof botPayloadString === "string") {
-      const trimmed = botPayloadString.trim();
-      if (trimmed.startsWith("{")) {
-        try {
-          botPayload = JSON.parse(trimmed);
-        } catch (e) {
-          console.error("Failed to parse bot payload JSON:", e);
-          botPayload = { content: trimmed };
-        }
-      } else {
-        botPayload = { content: trimmed };
-      }
-    } else {
-      console.error("Received a non-string payload:", botPayloadString);
-      botPayload = {
-        content: "❗ I received an unexpected response. Please try again.",
-      };
-    }
-
-    if (typeof botPayload !== "object" || botPayload === null) {
-      botPayload = { content: String(botPayload ?? "") };
-    }
-    if (!("content" in botPayload) || typeof botPayload.content !== "string") {
-      botPayload.content = String(botPayload.content ?? "");
-    }
-
-    addMessage("bot", botPayload);
-  } catch (error) {
-    // FIXED: Ensure the '...' loader is removed on error
-    const loadingDiv = document.getElementById("loading-message");
-    if (loadingDiv) loadingDiv.remove();
+  } else {
+    // Static bot messages (like errors)
+    messageDiv.innerHTML = convertMarkdownToHTML(payload);
+    const img = document.createElement("img");
+    img.className = "w-10 h-10 flex-shrink-0 rounded-full";
+    img.src = "/static/index/img/cheatboaticon.gif";
     
-    // Also re-enable the inputs on error
-    hideLoading();
-
-    addMessage("bot", {
-      content: `❌ *Server Error:* ${error.message || "Something went wrong."}`,
-    });
+    outerDiv.appendChild(img);
+    outerDiv.appendChild(messageDiv);
+    messagesContainer.appendChild(outerDiv);
   }
-  // FIXED: Removed the 'finally' block that was causing the loader to disappear too soon.
 }
 
 function sendMessage() {
   const userInput = document.getElementById("user-input");
   const messageText = userInput.value.trim();
+  
   if (messageText) {
+    // 1. Add User Message to UI
     addMessage("user", messageText);
     userInput.value = "";
+    
+    // 2. Show Loading Indicator
     showLoadingMessage();
 
-    // FIXED: Unify the loading state logic
+    // 3. Disable Inputs
     const sendButton = document.getElementById("send-button");
     userInput.disabled = true;
     sendButton.disabled = true;
-    sendButton.classList.add("loading"); // Add a class to style the button
+    sendButton.classList.add("loading");
 
+    // 4. Send via WebSocket (with slight delay for UI feel)
     setTimeout(() => {
-      fetchdata(messageText);
-    }, 300);
+        if (chatSocket.readyState === WebSocket.OPEN) {
+            chatSocket.send(JSON.stringify({
+                'message': messageText
+            }));
+        } else {
+            console.error("WebSocket is not open.");
+            addMessage("bot", "❌ Connection lost. Please refresh.");
+            hideLoading();
+            const loadingDiv = document.getElementById("loading-message");
+            if(loadingDiv) loadingDiv.remove();
+        }
+    }, 100);
   }
 }
 
 function hideLoading() {
-  // FIXED: This function now reverses the state set in sendMessage
   const sendButton = document.getElementById("send-button");
   const userInput = document.getElementById("user-input");
   
@@ -255,9 +257,11 @@ function handleKeyPress(event) {
   }
 }
 
+// Global Exports
 window.sendMessage = sendMessage;
 window.handleKeyPress = handleKeyPress;
 
+// Initialization
 document.addEventListener("DOMContentLoaded", function () {
   const chat = document.getElementById("open-chat");
   const footer = document.getElementById("main_footer");
@@ -265,6 +269,7 @@ document.addEventListener("DOMContentLoaded", function () {
   if (footer) footer.style.display = "none";
   const main = document.querySelector("main");
   if (main) main.classList.remove("min-h-screen");
+  
   setTimeout(() => {
     const main = document.querySelector("main");
     const chatbotCard = document.querySelector(".chatbot-card");

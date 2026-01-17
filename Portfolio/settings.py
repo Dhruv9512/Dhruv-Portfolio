@@ -19,6 +19,8 @@ ALLOWED_HOSTS = ['dhruv-portfolio-y8kt.onrender.com', 'localhost', '127.0.0.1']
 
 # Application definition
 INSTALLED_APPS = [
+    'daphne', 
+    'channels',
     "chat",
     "Skill",
     "home",
@@ -31,6 +33,21 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     'corsheaders',
 ]
+
+
+ASGI_APPLICATION = 'Portfolio.asgi.application'
+
+# Configure Redis Channel Layer
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [
+                "rediss://default:ASiWAAIncDIxZDBhNzlmNjc3YjA0M2M5ODQ4MzhiYTEwNmQ0MThmMHAyMTAzOTA@new-coyote-10390.upstash.io:6379"
+            ],
+        },
+    },
+}
 
 CACHES = {
     "default": {
