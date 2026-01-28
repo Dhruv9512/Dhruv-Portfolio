@@ -34,5 +34,7 @@ echo "Collecting static files..."
 python manage.py collectstatic --noinput
 
 PORT=${PORT:-8000}  # Use Render's provided port or fallback to 8000
-echo "Starting Gunicorn server on port ${PORT}..."
-exec gunicorn --bind 0.0.0.0:${PORT} --workers=1 --threads=2 --timeout 120 Portfolio.wsgi:application
+echo "Starting Daphne server on port ${PORT}..."
+exec daphne -b 0.0.0.0 -p ${PORT} Portfolio.asgi:application
+
+echo "Server started."
