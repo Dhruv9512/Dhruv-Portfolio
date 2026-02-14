@@ -1,5 +1,8 @@
 from django.shortcuts import render
 from .models import Education,Skill,certification_link,Work_Experience_and_Internships
+
+
+
 # Create your views here.
 def about(request):
     # ==============================Education tab===============================
